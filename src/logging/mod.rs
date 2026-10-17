@@ -70,9 +70,13 @@ pub struct StructuredLog {
     /// Kubernetes Node Name
     #[serde(skip_serializing_if = "Option::is_none")]
     pub k8s_node: Option<String>,
-    /// Kubernetes Namespace
+    /// Kubernetes Namespace.
+    ///
+    /// Wire name is `namespace` to match [`fields::NAMESPACE`] — previously
+    /// this field was serialised as `k8s_namespace`, which caused mismatches
+    /// in log-aggregation dashboards (issue #933).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub k8s_namespace: Option<String>,
+    pub namespace: Option<String>,
     /// Controller reconcile ID
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reconcile_id: Option<String>,
@@ -159,7 +163,7 @@ pub fn build_structured_log(event: &Event<'_>) -> StructuredLog {
         trace_id: crate::telemetry::current_trace_context().map(|(tid, _)| tid),
         span_id: crate::telemetry::current_trace_context().map(|(_, sid)| sid),
         k8s_node: std::env::var("K8S_NODE_NAME").ok(),
-        k8s_namespace: std::env::var("K8S_NAMESPACE").ok(),
+        namespace: std::env::var("K8S_NAMESPACE").ok(),
         reconcile_id: visitor
             .extras
             .get("reconcile_id")
@@ -255,7 +259,7 @@ mod tests {
             trace_id: Some("4bf92f3577b34da6a3ce929d0e0e4736".to_string()),
             span_id: Some("00f067aa0ba902b7".to_string()),
             k8s_node: Some("node-1".to_string()),
-            k8s_namespace: Some("default".to_string()),
+            namespace: Some("default".to_string()),
             reconcile_id: Some("rec-123".to_string()),
             correlation_id: Some("corr-456".to_string()),
             extras,
@@ -271,6 +275,9 @@ mod tests {
         assert_eq!(parsed["component"], "controller");
         assert_eq!(parsed["duration_ms"], 42);
         assert_eq!(parsed["reconcile_id"], "rec-123");
+        // Verify the wire name is "namespace", not "k8s_namespace" (issue #933).
+        assert_eq!(parsed["namespace"], "default");
+        assert!(parsed.get("k8s_namespace").is_none(), "old field 'k8s_namespace' must not appear in serialised JSON");
     }
 
     #[test]
@@ -289,7 +296,7 @@ mod tests {
             trace_id: None,
             span_id: None,
             k8s_node: None,
-            k8s_namespace: None,
+            namespace: None,
             reconcile_id: None,
             correlation_id: None,
             extras,

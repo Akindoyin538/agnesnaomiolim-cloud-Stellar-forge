@@ -15,14 +15,42 @@ the stable core is:
 | `level` | `TRACE`/`DEBUG`/`INFO`/`WARN`/`ERROR` |
 | `message` | Human-readable event message |
 | `target` | The Rust module that emitted the event |
-| `span_id` / `trace_id` | Active `tracing` span context (see OpenTelemetry) |
-| `*` | Loose fields from `tracing` events (e.g. `node_name`, `namespace`, `reconcile_id`) |
+| `trace_id` / `span_id` | Active `tracing` span context (see OpenTelemetry) |
+| `namespace` | Kubernetes namespace (from `K8S_NAMESPACE` env or log-field) |
+| `k8s_node` | Kubernetes node (host) name (from `K8S_NODE_NAME` env) |
+| `reconcile_id` | Monotonic reconcile counter |
+| `correlation_id` | Request correlation ID across service boundaries |
+| `*` | Additional context fields from `tracing` events (e.g. `node_type`, `phase`, `duration_ms`) |
+
+> **Field-name contract (issue #933):** The `StructuredLog` struct serialises
+> the Kubernetes namespace as `namespace` (matching [`fields::NAMESPACE`]) — an
+> earlier version erroneously used `k8s_namespace`.  Log aggregation pipelines
+> and alert rules **must** use `namespace`.
 
 Example:
 
 ```json
-{"timestamp":"2026-08-28T10:00:00.000000Z","level":"INFO","message":"Reconciled StellarNode","target":"stellar_k8s::controller::reconciler","node_name":"testnet-validator","namespace":"stellar"}
+{"timestamp":"2026-08-28T10:00:00.000000Z","level":"INFO","message":"Reconciled StellarNode","target":"stellar_k8s::controller::reconciler","node":"testnet-validator","namespace":"stellar","reconcile_id":42}
 ```
+
+## Canonical field names
+
+All call-sites **must** use the constants from `src/logging/fields.rs` instead
+of bare string literals. Import the module as:
+
+```rust
+use stellar_k8s::logging::fields as F;
+
+tracing::info!(
+    { F::NODE }         = %node_name,
+    { F::NAMESPACE }    = %namespace,
+    { F::RECONCILE_ID } = reconcile_id,
+    "Reconciliation started",
+);
+```
+
+The full list of constants is documented in the `fields` module inline doc and
+in the table at the top of this page.
 
 ## What emits JSON
 
@@ -58,6 +86,22 @@ setups.
 `monitoring/log-alerts.yaml` ships LogQL alert rules (Loki Ruler) for
 error-rate spikes, panic/fatal events, log-volume anomalies, and a downed log
 shipper. Deploy them next to your Loki/Prometheus instance.
+
+## Testing JSON log output
+
+The test suite includes `tests/json_logging_test.rs` which verifies that
+structured span fields (`node_name`, `namespace`, `reconcile_id`) appear in
+the JSON output when the JSON formatter is active. Run it with:
+
+```bash
+cargo test json_log_output_contains_node_namespace_reconcile_id_fields
+```
+
+The `src/logging/mod.rs` unit tests additionally confirm that:
+
+- `StructuredLog` serialises `namespace` (not `k8s_namespace`) for the
+  Kubernetes namespace field.
+- Round-trip deserialisation preserves all fields.
 
 ## Verifying locally
 
