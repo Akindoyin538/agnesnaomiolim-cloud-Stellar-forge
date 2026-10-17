@@ -236,5 +236,10 @@ required-features = ["rest-api", "metrics"]
 name = "stellar-metrics-proxy"
 path = "src/bin/stellar-metrics-proxy.rs"
 
+# Soroban Host Function Fee Calibrator sidecar — maps physical execution time to multi-dimensional fee settings
+[[bin]]
+name = "soroban-fee-calibrator"
+path = "src/bin/soroban-fee-calibrator.rs"
+
 [workspace]
 members = ["wasm-plugins", "telemetry", "security/p2p-firewall"]
