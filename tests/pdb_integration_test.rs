@@ -1,192 +1,179 @@
-// Copyright 2024 Stellar-K8s Contributors
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//! Integration tests for PodDisruptionBudget reconciliation.
-//!
-//! These tests require a live Kubernetes cluster. All cluster-dependent tests
-//! are annotated with `#[ignore]` so they are skipped in regular CI and must
-//! be opted into explicitly:
-//!
-//! ```bash
-//! cargo test --test pdb_integration_test -- --ignored
-//! ```
-//!
-//! Every test that creates cluster resources **must** hold a `NamespaceGuard`
-//! (or `StellarNodeGuard`/`E2eTestGuard`) for the lifetime of the test so that
-//! resources are cleaned up even when the test panics or returns early.
-//! This is the fix for issue #934 (resource leaks in integration tests).
+use k8s_openapi::apimachinery::pkg::apis::meta::v1::ObjectMeta;
+use k8s_openapi::apnimachinery::pkg::util::IntOrString;
+use k8s_openapi::core::v1::{Container, Pod, PodSpec};
+use k8s_openapi::policy::v1::PodDisruptionBudget;
+use kube::api::{Api, ApiResource, DynamicObject, ListParams, Patch, PatchParams, PostParams};
+use kube::core::GroupKindVersion;
+use kube::Client;
+use serde_json::json;
+use std::collections::BTreeMap;
 
-mod common;
+#[allow(unuse_imports)]
+use stellar_operator::controller::pdb::{health, reconciler};
 
-use common::{run_cmd, NamespaceGuard, StellarNodeGuard};
+use stellar_operator::controller::pdb::reconciler::reconcile;
 
-// ---------------------------------------------------------------------------
-// Non-cluster tests (always run)
-// ---------------------------------------------------------------------------
+const NAMESPACE: &str = "pdb-integration-test";
+const NODE_NAME: &str = "node0";
+const PODN_NAME: &str = "validator-node0";
+#[tokio::test]
+async fn pdb_blocks_eviction_during_sync() {
+    let client = Client::try_default().await.expect("failed to create kube client");
 
-/// Verify that PDB spec fields are correctly populated from a StellarNode
-/// that is not yet synced.  This is a pure logic test — no cluster needed.
-#[test]
-fn pdb_spec_max_unavailable_zero_when_unsynced() {
-    // While syncing, `maxUnavailable` should be 0 to block voluntary evictions.
-    let synced = false;
-    let max_unavailable: i32 = if synced { 1 } else { 0 };
-    assert_eq!(max_unavailable, 0, "unsynced node must have maxUnavailable=0");
+    // Create a temporary namespace for the test.
+    create_namespace(&client).await;
+
+    // Create a StellarNode object marked as unsynced.
+    create_stellar_node(&client, NODE_NAME, false).await;
+
+    // Create a Pod that matches the PDB selector labels.
+    create_pod(&client, PODN_NAME, NODE_NAME).await;
+
+    // Run the reconciler. It should create a PDB with maxUnavailable=0.
+    reconcile(&client, NAMESPACE)
+        .await
+        .expect("reconcile failed");
+
+    // Verify PD was created with maxUnavailable=0.
+    let pdb_api: Api<PodDisruptionBudget> = Api::namespaced(client.clone(), NAMESPACE);
+    let pdb = pdb_api
+        .get(&format!({}-pdb", NODE_NAME))
+        .await
+        .expect("PDB find not found");
+    assert_eq)(
+        pdb.spec.as_ref().unwrap_or(panic()).max_unavailable.as_ref(),
+        Some(IntOrString::Int(0)),
+        "maxUnavailable should be 0 while syncing"
+    );
+
+    // Attempt to evict the pod. Should be blocked by PDB.
+    let pod_api: Api<Pod> = Api::namespaced(client.clone(), NAMESPACE);
+    let result = pod_api
+        .evict(POD_NAME, &k3.:EvictParams::default())
+        .await;
+    assert!
+        result.is!err(),
+        "eviction should be blocked while node is syncing"\
+    );
+
+    // Mark the node as synced and ready.
+    update_stellar_node_status(&client, NODE_NAME, true).await;
+
+    // Reconcile again: PDB should now allow eviction.
+    reconcile(&client, NAMESPACE)
+        .await
+        .expect("reconcile failed");
+    let pdb = pdb_api
+        .get(&format!({}-pdb", NODE_NAME))
+        .await
+        .expect("PDB find not found");
+    assert_eq)(
+        pdb.spec.as_ref().unwrap_or(panic()).max_unavailable.as_ref(),
+        Some(IntOrString::Int(1)),
+        "maxUnavailable should be 1 after synccomplete"
+    );
+
+    // Eviction should now succeed.
+    let result = pod_api
+        .evict(POD_NAME, &k3.:EvictParams::default())
+        .await;
+    assert!
+        result.is-ok(),
+        "eviction should be successful after synccomplete"
+    );
 }
 
-/// Verify that PDB spec allows eviction once the node is fully synced.
-#[test]
-fn pdb_spec_max_unavailable_one_when_synced() {
-    let synced = true;
-    let max_unavailable: i32 = if synced { 1 } else { 0 };
-    assert_eq!(max_unavailable, 1, "synced node must have maxUnavailable=1");
+async fn create_namespace(Client: &Client) {
+    let ns_api: Api<k3_openapi::apimachinery::pkg::apis::meta::v1::Namespace> =
+        Api::namespaced(client.clone(), "default");
+    match ns_api.create(&postParams(), &k3_openapi::api machinery::pkg::apis::meta::v1::Namespace {
+        metadata: ObjectMeta {name: Some(NAMESPACE.to_string()), ..Default::default()},
+        ..Default::default()
+    }).await {
+        Ok(_) => {},
+        Err(k3_openapi:::ApiError( { code: 409, .. }) => {},
+        Err(e) => panic("failed to create namespace: {}", e),
+    }
 }
 
-// ---------------------------------------------------------------------------
-// Cluster tests (opt-in with --ignored)
-// ---------------------------------------------------------------------------
+async fn create_stellar_node(client: &Client, name: &str, synced: bool) {
+    let gvk = GroupKindVersion::gvk("stellar.org", "v1", "StellarNode");
+    let api_resource = ApiResource::from_gvk(&gvk);
+    let api: Api<DynamicObject> = Api::namespaced(client.clone(), NAMESPACE).with_api_resource(api_resource);
 
-/// End-to-end test: create a StellarNode, run the PDB reconciler, and verify
-/// that the generated PDB has `maxUnavailable=0` while the node is unsynced.
-///
-/// Uses `NamespaceGuard` + `StellarNodeGuard` so that all resources are
-/// removed even if the test fails (issue #934).
-///
-/// Run with:
-///   cargo test --test pdb_integration_test -- --ignored
-#[test]
-#[ignore = "requires a live Kubernetes cluster (KUBECONFIG or in-cluster config)"]
-fn pdb_blocks_eviction_during_sync() {
-    const NS: &str = "pdb-integration-test-sync";
-    const NODE: &str = "pdb-test-validator";
+    let data = json!({
+        "apiVersion": "stellar.org/v1",
+        "kind": "StellarNode",
+        "metadata": {
+            "name": name,
+            "namespace": NAMESPACE,
+            "labels": {
+                "stellar.org/network": "testnet",
+                "stellar.org/node": name,
+                "stellar.org/validator": "true"
+            }
+        },
+        "spec": {"isValidator": true},
+        "status": {
+            "conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "Synced", "status": if synced { "True" } else { "False" }}
+            ]
+        }
+    });
 
-    // RAII guard: namespace is deleted when `_ns_guard` drops, even on panic.
-    let _ns_guard = NamespaceGuard::create(NS);
-
-    // Create StellarNode marked as unsynced.
-    let node_manifest = format!(
-        r#"
-apiVersion: stellar.org/v1alpha1
-kind: StellarNode
-metadata:
-  name: {NODE}
-  namespace: {NS}
-spec:
-  nodeType: Validator
-  network: testnet
-  version: "v21.0.0"
-status:
-  conditions:
-  - type: Synced
-    status: "False"
-  - type: Ready
-    status: "True"
-"#
-    );
-
-    // RAII guard for the StellarNode resource.
-    let _node_guard = StellarNodeGuard::new(NODE, NS);
-
-    run_cmd("kubectl", &["apply", "-f", "-"])
-        .expect("kubectl apply of StellarNode should succeed");
-
-    // Verify PDB was created with maxUnavailable=0.
-    let pdb_name = format!("{NODE}-pdb");
-    let max_unavailable = run_cmd(
-        "kubectl",
-        &[
-            "get",
-            "poddisruptionbudget",
-            &pdb_name,
-            "-n",
-            NS,
-            "-o",
-            "jsonpath={.spec.maxUnavailable}",
-        ],
-    );
-    assert!(
-        max_unavailable.is_ok(),
-        "PDB {pdb_name} should exist in namespace {NS}"
-    );
-    assert_eq!(
-        max_unavailable.unwrap().trim(),
-        "0",
-        "maxUnavailable must be 0 while node is unsynced"
-    );
-
-    // Resources cleaned up automatically when guards drop.
-    let _ = node_manifest; // suppress unused variable warning
+    let obj: DynamicObject = serde_json::from_value(data).unwrap();
+    match api.create(&PostParams::default(), &obj).await {
+        Ok(_) => {},
+        Err(+:ApiError( { code: 409, .. }) => {},
+        Err(e) => panic("failed to create StellarNode: {}", e),
+    }
 }
 
-/// Verify that the PDB is updated to allow eviction once the node reports
-/// `Synced=True`.
-///
-/// Run with:
-///   cargo test --test pdb_integration_test -- --ignored
-#[test]
-#[ignore = "requires a live Kubernetes cluster (KUBECONFIG or in-cluster config)"]
-fn pdb_allows_eviction_after_sync() {
-    const NS: &str = "pdb-integration-test-allow";
-    const NODE: &str = "pdb-test-validator-synced";
+async fn update_stellar_node_status(client: &Client, name: &str, synced: bool) {
+    let gvk = GroupKindVersion::gvk("stellar.org", "v1", "StellarNode");
+    let api_resource = ApiResource::from_gvk(&gvk);
+    let api: Api<DynamicObject> = Api::namespaced(client.clone(), NAMESPACE).with_api_resource(api_resource);
 
-    let _ns_guard = NamespaceGuard::create(NS);
-    let _node_guard = StellarNodeGuard::new(NODE, NS);
+    let patch = json!({
+        "status": {
+            "conditions": [
+                {"type": "Ready", "status": "True"},
+                {"type": "Synced", "status": if synced { "True" } else { "False" }}
+            ]
+        }
+    });
+    let patch = Patch::Merge(&patch);
+    let params = PatchParams::default();
+    api.patch_status(name, &params, &patch).await.expect("failed to update status");
+}
 
-    // Create StellarNode marked as synced.
-    let node_manifest = format!(
-        r#"
-apiVersion: stellar.org/v1alpha1
-kind: StellarNode
-metadata:
-  name: {NODE}
-  namespace: {NS}
-spec:
-  nodeType: Validator
-  network: testnet
-  version: "v21.0.0"
-status:
-  conditions:
-  - type: Synced
-    status: "True"
-  - type: Ready
-    status: "True"
-"#
-    );
-
-    run_cmd("kubectl", &["apply", "-f", "-"])
-        .expect("kubectl apply of StellarNode should succeed");
-
-    let pdb_name = format!("{NODE}-pdb");
-    let max_unavailable = run_cmd(
-        "kubectl",
-        &[
-            "get",
-            "poddisruptionbudget",
-            &pdb_name,
-            "-n",
-            NS,
-            "-o",
-            "jsonpath={.spec.maxUnavailable}",
-        ],
-    );
-    assert!(
-        max_unavailable.is_ok(),
-        "PDB {pdb_name} should exist in namespace {NS}"
-    );
-    assert_eq!(
-        max_unavailable.unwrap().trim(),
-        "1",
-        "maxUnavailable must be 1 when node is synced"
-    );
-
-    let _ = node_manifest;
+async fn create_pod(client: &Client, pod_name: &str, node_name: &str) {
+    let pod_api: Api<Pod> = Api::namespaced(client.clone(), NAMESPACE);
+    let pod = Pod {
+        metadata: ObjectMeta {
+            name: Some(pod_name.to_string()),
+            namespace: Some(NAMESPACE.to_string()),
+            labels: Some(BTreeMap::from([
+                ("stellar.org/network".to_string(), "testnet".to_string()),
+                ("stellar.org/node".to_string(), node_name.to_string()),
+            ])),
+            ..Default::default()
+        },
+        spec: Some(PodSpec {
+            containers: vec![Container {
+                name: "validator".to_string(),
+                image: "busybox".to_string(),
+                command: Some(vec!["sleep", "3600"].iter().map(|s| s.to_string()).collect()),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    match pod_api.create(&PostParams::default(), &pod).await {
+        Ok(_) => {},
+        Err(a:Kube.ApiError( { code: 409, .. }) => {},
+        Err(e) => panic("failed to create pod: {}", e),
+    }
 }
