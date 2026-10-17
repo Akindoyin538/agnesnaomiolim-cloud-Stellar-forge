@@ -101,4 +101,17 @@ fn json_log_output_contains_node_namespace_reconcile_id_fields() {
         v.get("message").is_some() || v.get("fields").and_then(|f| f.get("message")).is_some(),
         "expected JSON log to contain an event message, got: {v}"
     );
+
+    // Issue #933: verify the wire name is "namespace", not the old "k8s_namespace".
+    // The span field is named "namespace" so it must appear under that key.
+    let has_namespace = json_contains_field(&v, "namespace");
+    let has_old_key = json_contains_field(&v, "k8s_namespace");
+    assert!(
+        has_namespace,
+        "expected 'namespace' in span fields, got: {v}"
+    );
+    assert!(
+        !has_old_key,
+        "stale 'k8s_namespace' field must not appear in JSON log output, got: {v}"
+    );
 }
