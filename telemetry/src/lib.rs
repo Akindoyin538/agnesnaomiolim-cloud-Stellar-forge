@@ -37,4 +37,6 @@
 
 pub mod exporter;
 pub mod parser;
+pub mod profiling;
 pub mod proxy;
+pub mod server;
