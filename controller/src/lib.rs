@@ -14,7 +14,12 @@
 //! - [`quorum`] — Quorum-set graph analysis utilities.
 //! - [`webhook`] — Admission webhook handlers, including the
 //!   [`webhook::wasm_mutator`] MutatingAdmissionWebhook for WASM optimization.
+//! - [`backup`] — Automated storage snapshot and cloud backup controller,
+//!   including the [`backup::snapshot::SnapshotController`] loop and the
+//!   [`backup::cloud::SnapshotProvider`] abstraction for AWS EBS, GCP PD, and
+//!   local storage back-ends.
 
+pub mod backup;
 pub mod deployment;
 pub mod quorum;
 pub mod webhook;
