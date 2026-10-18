@@ -17,4 +17,5 @@
 
 pub mod deployment;
 pub mod quorum;
+pub mod topology;
 pub mod webhook;
