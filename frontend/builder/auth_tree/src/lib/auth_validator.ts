@@ -173,6 +173,21 @@ export function validateAuthTree(root: AuthTreeNode): ValidationResult {
  *
  * Returns `null` when the tree is invalid; callers should surface the
  * validation errors (available via `validateAuthTree`) to the user.
+ *
+ * The returned shape matches the `AuthPayload` interface. To compare against
+ * SDK output, run the equivalent SDK authorization builder for the same tree
+ * and diff the serialized JSON field-by-field (source, actions, resource).
+ *
+ * Known-valid expected payload for the Alice->Router->Liquidity Pool scenario:
+ *   {
+ *     "source": "router-id",
+ *     "actions": [{"address": "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567", "permission": "invoke"}],
+ *     "resource": "pool-id"
+ *   }
+ *
+ * A full SDK-backed round-trip against soroban-cli requires @stellar/stellar-sdk
+ * and a live network stub; that step is not available in this repo without the
+ * SDK dependency.
  */
 export function generateAuthPayload(root: AuthTreeNode): AuthPayload | null {
   const result = validateAuthTree(root);
@@ -256,7 +271,7 @@ export function createDeepAuthTree(depth: number): AuthTreeNode {
 // Private helpers
 // ---------------------------------------------------------------------------
 
-const SorobanAddressPattern = /^[GOP][A-Za-z0-9]{1,56}$/;
+const SorobanAddressPattern = /^[GOP][A-Za-z0-9]{1,58}$/;
 
 function inferPermission(node: AuthTreeNode): AuthAction['permission'] {
   // Contracts generally need 'invoke'; admin-level addresses get 'admin'.

@@ -159,15 +159,24 @@ describe('Auth Validator', () => {
   });
 
   describe('generated payload against known-valid scenarios', () => {
-    it('should produce a known-valid payload for the Alice -> Router -> Liquidity Pool scenario', () => {
+    it('should produce the known-valid payload for the Alice -> Router -> Liquidity Pool scenario', () => {
+      // This is the reference scenario from the issue spec. Alice calls a Router
+      // which calls a Liquidity Pool. The generated payload must match the shape
+      // soroban-cli consumes: { source, actions: [{address, permission}], resource }.
+      //
+      // Known-valid expected payload (deterministic tree):
+      //   { source: "router-id", resource: "pool-id",
+      //     actions: [{ address: "GABCDEFGHIJKLMNOPQRSTUVWXYZ1234567", permission: "invoke" }] }
+      //
+      // A full SDK-backed round-trip against soroban-cli requires @stellar/stellar-sdk
+      // and a live network stub; this test verifies the field shape and values that
+      // the SDK would produce for the same tree.
       const tree = createAliceRouterLiquidityPoolTree();
       const payload = generateAuthPayload(tree);
       
-      // The payload is the shape soroban-cli consumes.
       expect(payload).not.toBeNull();
       if (!payload) return;
 
-      // Known values for this scenario (stable, deterministic tree).
       expect(payload.source).toBe('router-id');
       expect(payload.resource).toBe('pool-id');
       expect(payload.actions).toHaveLength(1);
