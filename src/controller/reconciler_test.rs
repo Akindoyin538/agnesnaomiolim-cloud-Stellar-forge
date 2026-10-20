@@ -859,4 +859,129 @@ VALIDATORS=["VALIDATOR1", "VALIDATOR2"]"#
             }
         }
     }
+
+    // ── Retry Duration and Backoff Math Tests ──────────────────────────────
+
+    #[test]
+    fn test_calculate_exponential_backoff_progression() {
+        // Base delay 10s, max 300s
+        assert_eq!(calculate_exponential_backoff(0, 10, 300), Duration::from_secs(10));
+        assert_eq!(calculate_exponential_backoff(1, 10, 300), Duration::from_secs(20));
+        assert_eq!(calculate_exponential_backoff(2, 10, 300), Duration::from_secs(40));
+        assert_eq!(calculate_exponential_backoff(3, 10, 300), Duration::from_secs(80));
+        assert_eq!(calculate_exponential_backoff(4, 10, 300), Duration::from_secs(160));
+        assert_eq!(calculate_exponential_backoff(5, 10, 300), Duration::from_secs(300)); // capped
+    }
+
+    #[test]
+    fn test_calculate_exponential_backoff_max_capping() {
+        // Any attempt past threshold should be clamped to max_secs
+        assert_eq!(calculate_exponential_backoff(5, 15, 100), Duration::from_secs(100));
+        assert_eq!(calculate_exponential_backoff(10, 15, 100), Duration::from_secs(100));
+        assert_eq!(calculate_exponential_backoff(30, 15, 100), Duration::from_secs(100));
+    }
+
+    #[test]
+    fn test_calculate_exponential_backoff_overflow_safety() {
+        // High attempt values should not panic or overflow
+        assert_eq!(calculate_exponential_backoff(63, 10, 500), Duration::from_secs(500));
+        assert_eq!(calculate_exponential_backoff(64, 10, 500), Duration::from_secs(500));
+        assert_eq!(calculate_exponential_backoff(u32::MAX, 10, 500), Duration::from_secs(500));
+        assert_eq!(calculate_exponential_backoff(10, u64::MAX, 500), Duration::from_secs(500));
+    }
+
+    #[test]
+    fn test_calculate_retry_duration_retriable_default_budget() {
+        let config = crate::controller::operator_config::ReconcilerConfig {
+            requeue_interval: 60,
+            error_backoff_base: 15,
+            max_backoff: 300,
+            enable_jitter: false,
+        };
+
+        // When retry_budget_retriable_secs is default (15), uses config backoff
+        assert_eq!(
+            calculate_retry_duration(true, 0, &config, 15, 60),
+            Duration::from_secs(15)
+        );
+        assert_eq!(
+            calculate_retry_duration(true, 1, &config, 15, 60),
+            Duration::from_secs(30)
+        );
+        assert_eq!(
+            calculate_retry_duration(true, 2, &config, 15, 60),
+            Duration::from_secs(60)
+        );
+        assert_eq!(
+            calculate_retry_duration(true, 5, &config, 15, 60),
+            Duration::from_secs(300)
+        );
+    }
+
+    #[test]
+    fn test_calculate_retry_duration_retriable_custom_budget() {
+        let config = crate::controller::operator_config::ReconcilerConfig {
+            requeue_interval: 60,
+            error_backoff_base: 15,
+            max_backoff: 300,
+            enable_jitter: false,
+        };
+
+        // When custom retry_budget_retriable_secs is set (e.g., 45), honors the explicit budget
+        assert_eq!(
+            calculate_retry_duration(true, 0, &config, 45, 60),
+            Duration::from_secs(45)
+        );
+        assert_eq!(
+            calculate_retry_duration(true, 3, &config, 45, 60),
+            Duration::from_secs(45)
+        );
+    }
+
+    #[test]
+    fn test_calculate_retry_duration_nonretriable() {
+        let config = crate::controller::operator_config::ReconcilerConfig {
+            requeue_interval: 60,
+            error_backoff_base: 15,
+            max_backoff: 300,
+            enable_jitter: false,
+        };
+
+        // Default non-retriable uses config.requeue_interval
+        assert_eq!(
+            calculate_retry_duration(false, 0, &config, 15, 60),
+            Duration::from_secs(60)
+        );
+        assert_eq!(
+            calculate_retry_duration(false, 5, &config, 15, 60),
+            Duration::from_secs(60)
+        );
+
+        // Custom non-retriable budget overrides
+        assert_eq!(
+            calculate_retry_duration(false, 0, &config, 15, 120),
+            Duration::from_secs(120)
+        );
+    }
+
+    #[test]
+    fn test_calculate_retry_duration_jitter_bounds() {
+        let config = crate::controller::operator_config::ReconcilerConfig {
+            requeue_interval: 60,
+            error_backoff_base: 20,
+            max_backoff: 300,
+            enable_jitter: true,
+        };
+
+        // Base for attempt 1 is 20 * 2^1 = 40.
+        // With jitter (0.5x to 1.5x), duration must be in [20, 60].
+        for _ in 0..20 {
+            let d = calculate_retry_duration(true, 1, &config, 15, 60);
+            assert!(
+                d.as_secs() >= 20 && d.as_secs() <= 60,
+                "Duration {:?} outside jitter bounds [20, 60]",
+                d
+            );
+        }
+    }
 }

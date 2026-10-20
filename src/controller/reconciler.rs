@@ -4709,6 +4709,44 @@ pub async fn reconcile_for_fuzz(
     reconcile(obj, ctx).await
 }
 
+/// Calculate retry duration based on error retriability, retry count, reconciler config, and retry budgets.
+pub(crate) fn calculate_retry_duration(
+    is_retriable: bool,
+    retry_count: u32,
+    config: &super::operator_config::ReconcilerConfig,
+    retry_budget_retriable_secs: u64,
+    retry_budget_nonretriable_secs: u64,
+) -> Duration {
+    if is_retriable {
+        // If custom retriable budget is provided and different from default, use it;
+        // otherwise calculate backoff from reconciler config
+        if retry_budget_retriable_secs > 0 && retry_budget_retriable_secs != 15 {
+            Duration::from_secs(retry_budget_retriable_secs)
+        } else {
+            config.calculate_backoff(retry_count)
+        }
+    } else {
+        if retry_budget_nonretriable_secs > 0 && retry_budget_nonretriable_secs != 60 {
+            Duration::from_secs(retry_budget_nonretriable_secs)
+        } else {
+            Duration::from_secs(config.requeue_interval)
+        }
+    }
+}
+
+/// Calculate exponential backoff duration for a given retry attempt.
+///
+/// Wraps exponential backoff math with a base delay, multiplier, and maximum cap.
+pub fn calculate_exponential_backoff(
+    attempt: u32,
+    base_secs: u64,
+    max_secs: u64,
+) -> Duration {
+    let multiplier = 2u64.saturating_pow(attempt);
+    let backoff_secs = base_secs.saturating_mul(multiplier).min(max_secs);
+    Duration::from_secs(backoff_secs)
+}
+
 /// Error policy determines how to handle reconciliation errors
 pub(crate) fn error_policy(
     node: Arc<StellarNode>,
@@ -4748,11 +4786,13 @@ pub(crate) fn error_policy(
         .unwrap_or(0);
 
     // Apply operator retry budget based on error retriability.
-    let retry_duration = if error.is_retriable() {
-        Duration::from_secs(ctx.retry_budget_retriable_secs)
-    } else {
-        Duration::from_secs(ctx.retry_budget_nonretriable_secs)
-    };
+    let retry_duration = calculate_retry_duration(
+        error.is_retriable(),
+        retry_count,
+        &ctx.operator_config.reconciler,
+        ctx.retry_budget_retriable_secs,
+        ctx.retry_budget_nonretriable_secs,
+    );
 
     debug!(
         "Requeuing {} after {:?} (retry_count: {}, retriable: {})",
