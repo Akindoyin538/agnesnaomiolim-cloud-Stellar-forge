@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * @file heatmap-load-test.js
+ * @file orderbook-load-test.js
  * @description
  * Load-testing and validation harness for the Dynamic WebGL Traffic Routing
  * Heatmap (#329).
