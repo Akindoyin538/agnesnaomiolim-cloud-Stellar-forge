@@ -94,6 +94,7 @@ pub mod rollout;
 pub mod secret_watcher;
 pub mod security;
 pub mod service_mesh;
+#[path = "snapshot.rs"]
 pub mod snapshot;
 pub mod snapshot_worker;
 pub mod spot_drain;
@@ -102,6 +103,7 @@ pub mod storage_migration;
 pub(crate) mod sync_scale;
 pub(crate) mod sync_state_monitor;
 
+#[path = "topology.rs"]
 pub mod topology;
 pub mod traffic;
 #[cfg(test)]
