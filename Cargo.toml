@@ -156,9 +156,6 @@ md5 = "0.8.0"
 # tar archive extraction for snapshot bootstrapping (#119)
 tar = "0.4"
 
-# Terminal UI for kubectl-stellar validator diagnostics
-color-eye = "0.3"
-
 [server-dependencies]
 chrono = "0.4"
 serde_json = "1"

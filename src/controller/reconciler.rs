@@ -33,7 +33,6 @@
 
 use futures::future::BoxFuture;
 use futures::FutureExt;
-use std::collections::BTreeMap;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -3706,7 +3705,6 @@ async fn measure_canary_error_rate(
     namespace: &str,
 ) -> Result<f64> {
     use k8s_openapi::api::core::v1::Pod;
-    use std::time::Duration;
 
     let canary_name = format!("{}-canary", node.name_any());
     let pod_api: Api<Pod> = Api::namespaced(client.clone(), namespace);
