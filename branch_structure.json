@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feat/issue-524-frontend-add-missing-alt-text-to-dashboard",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "feat/issue-524-frontend-add-missing-alt-text-to-dashboard": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "feat/issue-524-frontend-add-missing-alt-text-to-dashboard",
+    "origin"
+  ]
+}
