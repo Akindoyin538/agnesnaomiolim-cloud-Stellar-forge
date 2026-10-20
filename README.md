@@ -709,3 +709,6 @@ See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and releases.
 
 <!-- handsoff-issue-541 -->
 - #541: ## [Frontend] Clean Up Unused CSS Modules Import
+
+<!-- handsoff-issue-550 -->
+- #550: ## [Frontend] Clean Up Unused React Hook Imports
