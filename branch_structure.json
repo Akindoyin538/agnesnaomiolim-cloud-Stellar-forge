@@ -1,0 +1,24 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "fix/issue-540-frontend-fix-hover-state-color-contrast-on",
+    "fix/issue-555-backend-optimize-vector-allocation-in-telemetry",
+    "fix/issue-559-docs-add-quick-note-on-running-cargo-test-with",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "fix/issue-540-frontend-fix-hover-state-color-contrast-on": "main",
+    "fix/issue-555-backend-optimize-vector-allocation-in-telemetry": "main",
+    "fix/issue-559-docs-add-quick-note-on-running-cargo-test-with": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "fix/issue-540-frontend-fix-hover-state-color-contrast-on",
+    "fix/issue-555-backend-optimize-vector-allocation-in-telemetry",
+    "fix/issue-559-docs-add-quick-note-on-running-cargo-test-with",
+    "origin"
+  ]
+}
