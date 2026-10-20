@@ -1,0 +1,18 @@
+{
+  "default_branch": "main",
+  "branches": [
+    "feat/issue-538-backend-add-default-trait-implementation-for",
+    "main",
+    "origin"
+  ],
+  "parent": {
+    "feat/issue-538-backend-add-default-trait-implementation-for": "main",
+    "main": null,
+    "origin": "main"
+  },
+  "order": [
+    "main",
+    "feat/issue-538-backend-add-default-trait-implementation-for",
+    "origin"
+  ]
+}
