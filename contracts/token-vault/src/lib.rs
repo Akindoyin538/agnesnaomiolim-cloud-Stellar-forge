@@ -4,8 +4,9 @@ pub mod error;
 #[cfg(test)]
 mod test;
 
+use error::Error;
 use soroban_sdk::{
-    contract, contractimpl, contracttype, symbol_short, Address, Env, String,
+    contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Env, String,
 };
 
 pub const DEFAULT_MAX_GAS_LIMIT: u64 = 50_000_000;
@@ -81,13 +82,7 @@ impl TokenVault {
     /// * `decimals` - Number of decimal places for the token.
     /// * `name` - Descriptive name of the vault token.
     /// * `symbol` - Ticker symbol for the token.
-    pub fn initialize(
-        env: Env,
-        admin: Address,
-        decimals: u32,
-        name: String,
-        symbol: String,
-    ) {
+    pub fn initialize(env: Env, admin: Address, decimals: u32, name: String, symbol: String) {
         assert!(
             !env.storage().instance().has(&DataKey::Admin),
             "already initialized"
@@ -216,7 +211,9 @@ impl TokenVault {
         from.require_auth();
 
         let from_balance = balance(&env, &from);
-        assert!(from_balance >= amount, "insufficient balance");
+        if from_balance < amount {
+            panic_with_error!(&env, Error::InsufficientBalance);
+        }
 
         set_balance(&env, &from, from_balance - amount);
         set_balance(
@@ -248,7 +245,9 @@ impl TokenVault {
             },
         );
         let from_balance = balance(&env, &from);
-        assert!(from_balance >= amount, "insufficient balance");
+        if from_balance < amount {
+            panic_with_error!(&env, Error::InsufficientBalance);
+        }
         set_balance(&env, &from, from_balance - amount);
         set_balance(
             &env,
@@ -266,7 +265,9 @@ impl TokenVault {
         ensure_not_paused(&env);
         from.require_auth();
         let current = balance(&env, &from);
-        assert!(current >= amount, "insufficient balance");
+        if current < amount {
+            panic_with_error!(&env, Error::InsufficientBalance);
+        }
         set_balance(&env, &from, current - amount);
         let supply: i128 = env
             .storage()

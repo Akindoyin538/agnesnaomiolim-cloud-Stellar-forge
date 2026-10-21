@@ -6,6 +6,7 @@ use soroban_sdk::contracterror;
 pub enum Error {
     AlreadyInitialized = 1,
     NotInitialized = 2,
+    /// Transfer or burn amount exceeds the source account's token balance.
     InsufficientBalance = 3,
     InsufficientAllowance = 4,
     ZeroAmount = 5,
