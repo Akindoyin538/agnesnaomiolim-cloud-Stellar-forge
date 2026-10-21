@@ -558,6 +558,28 @@ VALIDATORS=["VALIDATOR1", "VALIDATOR2"]"#
     }
 
     #[test]
+    #[test]
+    fn test_upgrade_safety_is_validator_only() {
+        let mut validator = create_test_validator_node("test-validator", "default");
+        validator.spec.upgrade_safety = Some(crate::crd::UpgradeSafetyConfig {
+            enabled: true,
+            volume_snapshot_class_name: Some("csi-fast".to_string()),
+            flush_before_snapshot: true,
+            ready_timeout_seconds: 90,
+            encryption_key_ref: None,
+            halt_on_csi_unavailable: true,
+        });
+        assert!(validator.spec.validate().is_ok());
+
+        let mut horizon = create_test_horizon_node("test-horizon", "default");
+        horizon.spec.upgrade_safety = Some(crate::crd::UpgradeSafetyConfig {
+            enabled: true,
+            ..Default::default()
+        });
+        assert!(horizon.spec.validate().is_err());
+    }
+
+    #[test]
     fn test_pre_upgrade_snapshot_name_is_sanitized() {
         let node = create_test_validator_node("validator-a", "default");
         let snapshot_name = build_pre_upgrade_snapshot_name(&node, "v22.0.1+build.5");
