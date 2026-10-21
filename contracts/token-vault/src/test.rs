@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use super::{TokenVault, TokenVaultClient};
+use super::{TokenVault, TokenVaultClient, MAX_SUPPLY};
 use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
 fn setup() -> (Env, TokenVaultClient<'static>, Address, Address, Address) {
@@ -86,4 +86,34 @@ fn test_negative_amount_transfer_panics() {
 
     client.mint(&alice, &100);
     client.transfer(&alice, &bob, &-1);
+}
+
+#[test]
+fn test_mint_up_to_max_supply_succeeds() {
+    let (_env, client, _admin, alice, bob) = setup();
+
+    // Minting exactly up to MAX_SUPPLY is allowed: the cap is inclusive.
+    client.mint(&alice, &MAX_SUPPLY);
+    assert_eq!(client.total_supply(), MAX_SUPPLY);
+    assert_eq!(client.balance(&alice), MAX_SUPPLY);
+
+    // A zero-value mint while already at the cap stays a graceful no-op.
+    client.mint(&bob, &0);
+    assert_eq!(client.total_supply(), MAX_SUPPLY);
+    assert_eq!(client.balance(&bob), 0);
+}
+
+#[test]
+#[should_panic(expected = "supply overflow")]
+fn test_mint_beyond_max_supply_panics() {
+    let (_env, client, _admin, alice, bob) = setup();
+
+    // Fill total supply to the inclusive cap first, so the next mint is the
+    // first amount that would push supply beyond MAX_SUPPLY.
+    client.mint(&alice, &MAX_SUPPLY);
+    assert_eq!(client.total_supply(), MAX_SUPPLY);
+
+    // Minting 1 token past the cap must revert on the checked-add supply
+    // boundary without crediting bob or corrupting total supply.
+    client.mint(&bob, &1);
 }
