@@ -51,16 +51,16 @@ pub mod cross_region_sync;
 pub mod cve;
 pub(crate) mod cve_reconciler;
 pub mod cve_scanner;
-[cfg(test)]
+#[cfg(test)]
 pub(crate) mod cve_test;
 pub mod db_pool;
 pub mod diff;
 pub mod disk_scaler;
-[cfg(test)]
+#[cfg(test)]
 mod disk_scaler_test;
 pub mod dr;
 pub mod dr_drill;
-[cfg(test)]
+#[cfg(test)]
 mod dr_test;
 pub mod finalizers;
 pub(crate) mod forensic_snapshot;
@@ -69,28 +69,28 @@ pub(crate) mod health;
 mod health_test;
 pub mod ingestion;
 pub mod kms_secret;
-[cfg(feature = "metrics")]
+#[cfg(feature = "metrics")]
 pub mod metrics;
 pub mod mtls;
 pub mod mtls_rotation;
 pub mod oci_snapshot;
 pub mod operator_config;
 pub mod peer_discovery;
-[cfg(test)]
+#[cfg(test)]
 mod peer_discovery_test;
 pub mod pruning_reconciler;
 pub mod pruning_worker;
 pub mod quorum;
 pub mod read_pool;
 pub(crate) mod reconciler;
-[cfg(test)]
+#[cfg(test)]
 mod reconciler_test;
 pub(crate) mod remediation;
-[cfg(test)]
+#[cfg(test)]
 mod remediation_test;
 pub mod resource_optimization;
 pub(crate) mod resources;
-[cfg(test)]
+#[cfg(test)]
 mod resources_test;
 pub mod rollout;
 pub mod secret_watcher;
