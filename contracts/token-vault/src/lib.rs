@@ -117,12 +117,45 @@ impl TokenVault {
         env.storage().instance().set(&DataKey::Paused, &paused);
     }
 
-    /// Mints new tokens to a designated recipient address.
+    /// Mints new tokens and credits them to a recipient address.
+    ///
+    /// Minting is the only operation that expands total supply, so it is gated
+    /// by the admin registered in [`TokenVault::initialize`] via
+    /// `admin.require_auth()` and is rejected while the vault is paused.
     ///
     /// # Arguments
-    /// * `env` - The Soroban execution environment.
-    /// * `to` - The recipient address of the minted tokens.
-    /// * `amount` - Amount of tokens to mint (must be non-negative).
+    ///
+    /// * `env` - The Soroban execution environment. Supplies the admin,
+    ///   pause flag and current total supply (instance storage), the
+    ///   recipient's balance (persistent storage), and the event sink used to
+    ///   emit the `mint` event.
+    /// * `to` - Address that receives the newly minted tokens. Its balance is
+    ///   credited by `amount`, initializing the entry to `0` first when the
+    ///   account has never held tokens. `to` does not need to authorize the
+    ///   call; minting to an arbitrary address is a deliberate admin action.
+    /// * `amount` - Quantity of tokens to mint, in the token's smallest unit
+    ///   (base units, i.e. whole multiples of 10^-`decimals` as configured in
+    ///   [`TokenVault::initialize`]). Must be non-negative. The same value is
+    ///   added to both `to`'s balance and the global total supply; `0` is
+    ///   accepted and acts as a balance no-op that still emits an event.
+    ///
+    /// # Panics
+    ///
+    /// Panics without applying any state change when:
+    ///
+    /// * `amount` is negative (`"amount must not be negative"`),
+    /// * the vault is paused (`"contract is paused"`),
+    /// * the vault was never initialized (`"not initialized"`),
+    /// * the admin did not authorize the invocation (authorization failure
+    ///   from `require_auth`),
+    /// * `total_supply + amount` overflows `i128` (`"supply overflow"`) or
+    ///   exceeds [`MAX_SUPPLY`] (`"exceeds max supply"`), or
+    /// * `to`'s resulting balance overflows `i128` (`"balance overflow"`).
+    ///
+    /// # Events
+    ///
+    /// Publishes an event with topic `(symbol_short!("mint"), to)` and data
+    /// `amount`, allowing indexers to track supply expansion per recipient.
     pub fn mint(env: Env, to: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
