@@ -129,6 +129,10 @@ podSecurityContext:
   runAsGroup: 65532
   fsGroup: 65532
 
+# Default: unprivileged. eBPF network telemetry (issue #470) needs CAP_BPF,
+# CAP_PERFMON, and CAP_NET_ADMIN on the collector container when enabled; the
+# operator falls back to standard Prometheus metrics if those caps are absent.
+# See docs/ebpf-network-telemetry.md.
 securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: true
