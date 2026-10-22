@@ -745,6 +745,18 @@ async fn workload_resource_exists(client: &Client, node: &StellarNode) -> Result
     }
 }
 
+pub(crate) fn extract_recent_health_or_err(
+    recent_health: Option<health::HealthCheckResult>,
+    namespace: &str,
+    name: &str,
+) -> Result<health::HealthCheckResult> {
+    recent_health.ok_or_else(|| {
+        Error::ConfigError(format!(
+            "Missing recent health check result for {namespace}/{name} after skipping status poll"
+        ))
+    })
+}
+
 pub(crate) fn build_pre_upgrade_snapshot_name(node: &StellarNode, version: &str) -> String {
     let mut sanitized_version = version
         .chars()
@@ -2602,7 +2614,7 @@ pub(crate) fn apply_stellar_node(
         }
 
         let health_result = if skipped_poll {
-            recent_health.unwrap()
+            extract_recent_health_or_err(recent_health, &namespace, &name)?
         } else {
             health::check_node_health(&client, &node, ctx.mtls_config.as_ref()).await?
         };
