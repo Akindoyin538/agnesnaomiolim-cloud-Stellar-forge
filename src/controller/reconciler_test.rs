@@ -12,8 +12,8 @@ mod tests {
     use super::super::reconciler::*;
     use crate::controller::{AuditLog, JobRegistry};
     use crate::crd::{
-        BackupConfig, CaptiveCoreConfig, Condition, HorizonConfig, ManagedDatabaseConfig,
-        NodeType, ResourceRequirements, ResourceSpec, SorobanConfig, StellarNetwork, StellarNode,
+        BackupConfig, CaptiveCoreConfig, Condition, HorizonConfig, ManagedDatabaseConfig, NodeType,
+        ResourceRequirements, ResourceSpec, SorobanConfig, StellarNetwork, StellarNode,
         StellarNodeSpec, StorageConfig, ValidatorConfig,
     };
     use crate::error::Error;
@@ -564,6 +564,24 @@ VALIDATORS=["VALIDATOR1", "VALIDATOR2"]"#
 
         assert!(snapshot_name.starts_with("validator-a-upgrade-v22-0-1-build-5-"));
         assert!(snapshot_name.len() <= 253);
+    }
+
+    #[test]
+    fn test_extract_recent_health_or_err_returns_health_when_present() {
+        let expected = crate::controller::health::HealthCheckResult::synced(Some(42));
+        let res = extract_recent_health_or_err(Some(expected), "default", "validator-a");
+        assert!(res.is_ok());
+        if let Ok(health) = res {
+            assert!(health.healthy);
+            assert!(health.synced);
+            assert_eq!(health.ledger_sequence, Some(42));
+        }
+    }
+
+    #[test]
+    fn test_extract_recent_health_or_err_propagates_error_when_missing() {
+        let res = extract_recent_health_or_err(None, "default", "validator-a");
+        assert!(matches!(res, Err(Error::ConfigError(_))));
     }
 
     /// Test that suspended nodes have 0 replicas
