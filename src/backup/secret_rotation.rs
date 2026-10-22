@@ -859,9 +859,7 @@ mod tests {
     #[tokio::test]
     async fn test_password_generation() {
         let config = SecretRotationConfig::default();
-        let Ok(client) = Client::try_default().await else {
-            eprintln!("skipping test_password_generation: no Kubernetes client available");
-            return;
+
         };
 
         let scheduler = SecretRotationScheduler::new(config.clone(), client);
@@ -874,9 +872,7 @@ mod tests {
     #[tokio::test]
     async fn test_password_hashing() {
         let config = SecretRotationConfig::default();
-        let Ok(client) = Client::try_default().await else {
-            eprintln!("skipping test_password_hashing: no Kubernetes client available");
-            return;
+
         };
 
         let scheduler = SecretRotationScheduler::new(config, client);
