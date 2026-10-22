@@ -89,22 +89,18 @@ use super::operator_config::{hardcoded_defaults, OperatorConfig};
 use super::peer_discovery;
 use super::phases::{PhaseMachine, ReconcilePhase};
 use super::pss;
-use super::snapshot;
-use super::upgrade_snapshot::{
-    self, PRE_UPGRADE_SNAPSHOT_NAME_ANNOTATION, PRE_UPGRADE_SNAPSHOT_STARTED_AT_ANNOTATION,
-    PRE_UPGRADE_SNAPSHOT_STATUS_ANNOTATION, PRE_UPGRADE_SNAPSHOT_TARGET_VERSION_ANNOTATION,
-};
+
 use super::remediation;
 use super::resources;
 use super::secret_watcher;
 use super::service_mesh;
+use super::snapshot;
 use super::spot_drain;
 use super::sync_scale;
 use super::sync_state_monitor;
 use super::vpa as vpa_controller;
 use super::vsl;
 use chrono::Utc;
-
 
 trait ToStellarNodeArc {
     fn to_arc(&self) -> Arc<StellarNode>;
@@ -749,14 +745,37 @@ async fn workload_resource_exists(client: &Client, node: &StellarNode) -> Result
     }
 }
 
+pub(crate) fn extract_recent_health_or_err(
+    recent_health: Option<health::HealthCheckResult>,
+    namespace: &str,
+    name: &str,
+) -> Result<health::HealthCheckResult> {
+    recent_health.ok_or_else(|| {
+        Error::ConfigError(format!(
+            "Missing recent health check result for {namespace}/{name} after skipping status poll"
+        ))
+    })
+}
+
 pub(crate) fn build_pre_upgrade_snapshot_name(node: &StellarNode, version: &str) -> String {
     let mut sanitized_version = version
         .chars()
-        .map(|c| if c.is_ascii_alphanumeric() { c.to_ascii_lowercase() } else { '-' })
+        .map(|c| {
+            if c.is_ascii_alphanumeric() {
+                c.to_ascii_lowercase()
+            } else {
+                '-'
+            }
+        })
         .collect::<String>();
     sanitized_version = sanitized_version.trim_matches('-').to_string();
     let timestamp = chrono::Utc::now().format("%Y%m%d%H%M%S").to_string();
-    let base = format!("{}-upgrade-{}-{}", node.name_any(), sanitized_version, timestamp);
+    let base = format!(
+        "{}-upgrade-{}-{}",
+        node.name_any(),
+        sanitized_version,
+        timestamp
+    );
     if base.len() <= 253 {
         base
     } else {
@@ -780,7 +799,10 @@ async fn patch_upgrade_snapshot_annotations(
 
     match snapshot_name {
         Some(value) => {
-            annotations.insert(PRE_UPGRADE_SNAPSHOT_NAME_ANNOTATION.to_string(), value.to_string());
+            annotations.insert(
+                PRE_UPGRADE_SNAPSHOT_NAME_ANNOTATION.to_string(),
+                value.to_string(),
+            );
         }
         None => {
             annotations.remove(PRE_UPGRADE_SNAPSHOT_NAME_ANNOTATION);
@@ -813,7 +835,10 @@ async fn patch_upgrade_snapshot_annotations(
 
     match status {
         Some(value) => {
-            annotations.insert(PRE_UPGRADE_SNAPSHOT_STATUS_ANNOTATION.to_string(), value.to_string());
+            annotations.insert(
+                PRE_UPGRADE_SNAPSHOT_STATUS_ANNOTATION.to_string(),
+                value.to_string(),
+            );
         }
         None => {
             annotations.remove(PRE_UPGRADE_SNAPSHOT_STATUS_ANNOTATION);
@@ -893,7 +918,10 @@ async fn reconcile_pre_upgrade_snapshot(
                 }
             }
 
-            if let Err(e) = snapshot::create_pre_upgrade_snapshot(client, node, &rebuilt_name, backup_config).await {
+            if let Err(e) =
+                snapshot::create_pre_upgrade_snapshot(client, node, &rebuilt_name, backup_config)
+                    .await
+            {
                 let message = format!(
                     "Failed to create pre-upgrade snapshot {rebuilt_name} for {}/{}: {}",
                     namespace, name, e
@@ -913,7 +941,10 @@ async fn reconcile_pre_upgrade_snapshot(
                     node,
                     "Failed",
                     Some(message.clone()),
-                    node.status.as_ref().map(|status| status.ready_replicas).unwrap_or(0),
+                    node.status
+                        .as_ref()
+                        .map(|status| status.ready_replicas)
+                        .unwrap_or(0),
                     false,
                 )
                 .await?;
@@ -968,7 +999,9 @@ async fn reconcile_pre_upgrade_snapshot(
             }
         }
 
-        if let Err(e) = snapshot::create_pre_upgrade_snapshot(client, node, &rebuilt_name, backup_config).await {
+        if let Err(e) =
+            snapshot::create_pre_upgrade_snapshot(client, node, &rebuilt_name, backup_config).await
+        {
             let message = format!(
                 "Failed to create pre-upgrade snapshot {rebuilt_name} for {}/{}: {}",
                 namespace, name, e
@@ -988,7 +1021,10 @@ async fn reconcile_pre_upgrade_snapshot(
                 node,
                 "Failed",
                 Some(message.clone()),
-                node.status.as_ref().map(|status| status.ready_replicas).unwrap_or(0),
+                node.status
+                    .as_ref()
+                    .map(|status| status.ready_replicas)
+                    .unwrap_or(0),
                 false,
             )
             .await?;
@@ -1062,7 +1098,10 @@ async fn reconcile_pre_upgrade_snapshot(
                         node,
                         "Failed",
                         Some(message.clone()),
-                        node.status.as_ref().map(|status| status.ready_replicas).unwrap_or(0),
+                        node.status
+                            .as_ref()
+                            .map(|status| status.ready_replicas)
+                            .unwrap_or(0),
                         false,
                     )
                     .await?;
@@ -1084,9 +1123,8 @@ async fn reconcile_pre_upgrade_snapshot(
             Ok(false)
         }
         Ok(snapshot::VolumeSnapshotReadiness::Failed(reason)) => {
-            let message = format!(
-                "Pre-upgrade snapshot {snapshot_name} failed: {reason}. Upgrade halted."
-            );
+            let message =
+                format!("Pre-upgrade snapshot {snapshot_name} failed: {reason}. Upgrade halted.");
             publish_stellar_event!(
                 client,
                 reporter,
@@ -1102,7 +1140,10 @@ async fn reconcile_pre_upgrade_snapshot(
                 node,
                 "Failed",
                 Some(message.clone()),
-                node.status.as_ref().map(|status| status.ready_replicas).unwrap_or(0),
+                node.status
+                    .as_ref()
+                    .map(|status| status.ready_replicas)
+                    .unwrap_or(0),
                 false,
             )
             .await?;
@@ -1128,7 +1169,10 @@ async fn reconcile_pre_upgrade_snapshot(
                 node,
                 "Failed",
                 Some(message.clone()),
-                node.status.as_ref().map(|status| status.ready_replicas).unwrap_or(0),
+                node.status
+                    .as_ref()
+                    .map(|status| status.ready_replicas)
+                    .unwrap_or(0),
                 false,
             )
             .await?;
@@ -2633,7 +2677,7 @@ pub(crate) fn apply_stellar_node(
         }
 
         let health_result = if skipped_poll {
-            recent_health.unwrap()
+            extract_recent_health_or_err(recent_health, &namespace, &name)?
         } else {
             health::check_node_health(&client, &node, ctx.mtls_config.as_ref()).await?
         };

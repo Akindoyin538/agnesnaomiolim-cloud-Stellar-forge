@@ -82,6 +82,12 @@ chmod +x kubectl && sudo mv kubectl /usr/local/bin/
 curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
 
+> **Troubleshooting Docker socket permissions.** If `docker ps` or `kind` fails
+> with `permission denied while trying to connect to the Docker daemon socket at
+> unix:///var/run/docker.sock`, your shell has not picked up the `docker` group
+> yet. Run `sudo usermod -aG docker "$USER"` followed by `newgrp docker` (or log
+> out and back in) — see [Diagnostics](#docker-socket-permission-denied) below.
+
 Raise the inotify limits before running `kind` or `cargo watch`. Both consume
 watches aggressively, and the default limits on most distributions are low
 enough that clusters fail to start with cryptic errors:
@@ -297,6 +303,28 @@ make ci-local   # fmt-check + lint + audit + test + build
 ---
 
 ## Diagnostics
+
+### Docker socket `permission denied`
+
+If `docker ps`, `kind create cluster`, or `make quickstart` fails with:
+
+```text
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+```
+
+your user is not in the `docker` group (or your current login session predates
+the group change). Add your user to the `docker` group and reload group
+membership:
+
+```bash
+sudo groupadd -f docker
+sudo usermod -aG docker "$USER"
+newgrp docker   # activate in the current shell, or log out and back in
+docker ps       # confirm non-root access works
+```
+
+> **Security note.** Membership in the `docker` group grants privileges
+> equivalent to `root` on the host. Only add trusted local development accounts.
 
 ### The cluster never becomes ready, or nodes go `NotReady`
 

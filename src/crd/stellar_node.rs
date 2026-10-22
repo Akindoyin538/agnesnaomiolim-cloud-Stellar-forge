@@ -23,9 +23,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 
-use super::types::*;
-
-
 
 /// Structured validation error for `StellarNodeSpec`
 #[derive(Clone, Debug, PartialEq, Eq)]
