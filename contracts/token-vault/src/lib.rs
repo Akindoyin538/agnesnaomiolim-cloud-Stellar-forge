@@ -86,14 +86,24 @@ fn ensure_execution_guard(env: &Env) {
 
 #[contractimpl]
 impl TokenVault {
-    /// Initializes the token vault with administrative control and metadata.
+    /// Initializes the token vault with administrative control and token metadata.
+    ///
+    /// On success, stores the administrator, decimal precision, name, and symbol,
+    /// sets the vault to unpaused, and initializes the total supply to zero.
+    /// Initialization can only be performed once.
     ///
     /// # Arguments
     /// * `env` - The Soroban execution environment.
-    /// * `admin` - The address granted administrative privileges.
-    /// * `decimals` - Number of decimal places for the token.
+    /// * `admin` - The address granted administrative privileges; this address must authorize the call.
+    /// * `decimals` - Number of decimal places used to represent token amounts.
     /// * `name` - Descriptive name of the vault token.
-    /// * `symbol` - Ticker symbol for the token.
+    /// * `symbol` - Short ticker symbol for the token.
+    ///
+    /// # Returns
+    /// Returns `()` after the vault has been initialized.
+    ///
+    /// # Panics
+    /// Panics if the vault has already been initialized or if `admin` does not authorize the call.
     pub fn initialize(env: Env, admin: Address, decimals: u32, name: String, symbol: String) {
         assert!(
             !env.storage().instance().has(&DataKey::Admin),
