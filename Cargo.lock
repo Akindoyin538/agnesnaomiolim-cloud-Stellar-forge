@@ -5824,7 +5824,6 @@ dependencies = [
  "tracing-subscriber",
  "url",
  "urlencoding",
- "walkdir",
  "wasmtime",
  "wasmtime-wasi",
  "wat",
@@ -5847,7 +5846,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "tempfile",
- "thiserror 1.0.69",
+
  "time",
  "tokio",
  "tokio-test",
