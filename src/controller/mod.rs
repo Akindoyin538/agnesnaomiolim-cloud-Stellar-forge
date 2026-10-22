@@ -96,6 +96,7 @@ pub mod security;
 pub mod service_mesh;
 #[path = "snapshot.rs"]
 pub mod snapshot;
+pub(crate) mod upgrade_snapshot;
 pub mod snapshot_worker;
 pub mod spot_drain;
 pub mod storage;

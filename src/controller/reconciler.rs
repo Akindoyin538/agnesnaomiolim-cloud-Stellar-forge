@@ -89,6 +89,7 @@ use super::operator_config::{hardcoded_defaults, OperatorConfig};
 use super::peer_discovery;
 use super::phases::{PhaseMachine, ReconcilePhase};
 use super::pss;
+
 use super::remediation;
 use super::resources;
 use super::secret_watcher;
@@ -2022,6 +2023,33 @@ pub(crate) fn apply_stellar_node(
             .await
             .unwrap_or(false);
 
+        // 4.5 Snapshot-gated upgrades: pause StatefulSet until VolumeSnapshot is ReadyToUse.
+        if node.spec.node_type == NodeType::Validator {
+            if let Some(cfg) = upgrade_snapshot::effective_backup_config(&node.spec) {
+                let current_version = get_current_statefulset_version(&client, &node).await?;
+                match reconcile_pre_upgrade_snapshot(
+                    &client,
+                    &ctx.event_reporter,
+                    &node,
+                    &cfg,
+                    current_version.as_deref(),
+                )
+                .await
+                {
+                    Ok(true) => {
+                        upgrade_snapshot::resume_statefulset_rollout(&client, &node).await?;
+                    }
+                    Ok(false) => {
+                        upgrade_snapshot::pause_statefulset_rollout(&client, &node).await?;
+                        return Ok(Action::requeue(Duration::from_secs(10)));
+                    }
+                    Err(e) => {
+                        upgrade_snapshot::pause_statefulset_rollout(&client, &node).await?;
+                        return Err(e);
+                    }
+                }
+            }
+        }
 
         // 5. Create/update the Deployment/StatefulSet based on node type
         let workload_result = apply_or_emit!(
