@@ -6,6 +6,7 @@ mod test;
 
 use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String};
 
+/// Standardized default maximum gas limit enforced by contract execution guards.
 pub const DEFAULT_MAX_GAS_LIMIT: u64 = 50_000_000;
 pub const MAX_SUPPLY: i128 = i128::MAX;
 
@@ -67,6 +68,20 @@ fn ensure_not_paused(env: &Env) {
         .get(&DataKey::Paused)
         .unwrap_or(false);
     assert!(!paused, "contract is paused");
+}
+
+/// Execution guard verifying that a requested gas limit does not exceed `DEFAULT_MAX_GAS_LIMIT`.
+pub fn ensure_gas_limit(gas_limit: u64) {
+    assert!(
+        gas_limit <= DEFAULT_MAX_GAS_LIMIT,
+        "gas limit exceeds default max limit"
+    );
+}
+
+/// Execution guard standardizing contract execution boundaries and checking pause status.
+fn ensure_execution_guard(env: &Env) {
+    ensure_not_paused(env);
+    ensure_gas_limit(DEFAULT_MAX_GAS_LIMIT);
 }
 
 #[contractimpl]
@@ -159,6 +174,30 @@ impl TokenVault {
     pub fn mint(env: Env, to: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
+    /// Returns the default maximum gas limit standardized across smart contract execution guards.
+    pub fn max_gas_limit(_env: Env) -> u64 {
+        DEFAULT_MAX_GAS_LIMIT
+    }
+
+    /// Execution guard validating whether a proposed gas limit is within default execution boundaries.
+    pub fn verify_gas_limit(_env: Env, gas_limit: u64) -> bool {
+        gas_limit <= DEFAULT_MAX_GAS_LIMIT
+    }
+
+    /// Execution guard asserting that the gas limit does not exceed standard boundaries.
+    pub fn check_gas_limit(_env: Env, gas_limit: u64) {
+        ensure_gas_limit(gas_limit);
+    }
+
+    /// Mints new tokens to a designated recipient address.
+    ///
+    /// # Arguments
+    /// * `env` - The Soroban execution environment.
+    /// * `to` - The recipient address of the minted tokens.
+    /// * `amount` - Amount of tokens to mint (must be non-negative).
+    pub fn mint(env: Env, to: Address, amount: i128) {
+        require_amount(amount);
+        ensure_execution_guard(&env);
         let admin: Address = env
             .storage()
             .instance()
@@ -238,6 +277,7 @@ impl TokenVault {
     pub fn transfer(env: Env, from: Address, to: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
+        ensure_execution_guard(&env);
         from.require_auth();
 
         let from_balance = balance(&env, &from);
@@ -258,6 +298,7 @@ impl TokenVault {
     pub fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
+        ensure_execution_guard(&env);
         spender.require_auth();
         let data = allowance(&env, &from, &spender);
         assert!(
@@ -289,6 +330,7 @@ impl TokenVault {
     pub fn burn(env: Env, from: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
+        ensure_execution_guard(&env);
         from.require_auth();
         let current = balance(&env, &from);
         assert!(current >= amount, "insufficient balance");

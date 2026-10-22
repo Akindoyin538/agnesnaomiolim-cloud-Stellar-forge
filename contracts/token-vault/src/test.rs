@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use super::{TokenVault, TokenVaultClient, MAX_SUPPLY};
+use super::{ensure_gas_limit, TokenVault, TokenVaultClient, DEFAULT_MAX_GAS_LIMIT};
 use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
 fn setup() -> (Env, TokenVaultClient<'static>, Address, Address, Address) {
@@ -116,4 +117,38 @@ fn test_mint_beyond_max_supply_panics() {
     // Minting 1 token past the cap must revert on the checked-add supply
     // boundary without crediting bob or corrupting total supply.
     client.mint(&bob, &1);
+fn test_default_max_gas_limit_constant() {
+    assert_eq!(DEFAULT_MAX_GAS_LIMIT, 50_000_000);
+}
+
+#[test]
+fn test_gas_limit_execution_guard_client() {
+    let (_env, client, _admin, _alice, _bob) = setup();
+
+    assert_eq!(client.max_gas_limit(), 50_000_000);
+    assert!(client.verify_gas_limit(&DEFAULT_MAX_GAS_LIMIT));
+    assert!(client.verify_gas_limit(&25_000_000));
+    assert!(!client.verify_gas_limit(&(DEFAULT_MAX_GAS_LIMIT + 1)));
+
+    client.check_gas_limit(&DEFAULT_MAX_GAS_LIMIT);
+    client.check_gas_limit(&1_000_000);
+}
+
+#[test]
+#[should_panic(expected = "gas limit exceeds default max limit")]
+fn test_gas_limit_execution_guard_client_panics_on_exceed() {
+    let (_env, client, _admin, _alice, _bob) = setup();
+    client.check_gas_limit(&(DEFAULT_MAX_GAS_LIMIT + 1));
+}
+
+#[test]
+fn test_ensure_gas_limit_helper() {
+    ensure_gas_limit(DEFAULT_MAX_GAS_LIMIT);
+    ensure_gas_limit(10_000_000);
+}
+
+#[test]
+#[should_panic(expected = "gas limit exceeds default max limit")]
+fn test_ensure_gas_limit_helper_panics_on_exceed() {
+    ensure_gas_limit(DEFAULT_MAX_GAS_LIMIT + 1);
 }
