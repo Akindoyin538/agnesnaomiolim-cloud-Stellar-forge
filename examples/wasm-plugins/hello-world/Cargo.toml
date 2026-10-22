@@ -5,7 +5,10 @@ edition = "2021"
 description = "Hello World Wasm validation plugin for Stellar-K8s — tutorial example"
 license = "Apache-2.0"
 
-lib]
+# Prevent Cargo from trying to include this crate in the parent workspace.
+[workspace]
+
+[lib]
 crate-type = ["cdylib"]
 
 [dependencies]
