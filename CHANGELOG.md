@@ -5,6 +5,147 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.22.0 (2026-10-22) [minor]
+
+• Merge pull request #609 from Goodnessukaigwe/fix/470-ebpf-based-low-overhead-network-telemetry-collector
+• [470] [Backend] eBPF-based Low-Overhead Network Telemetry Collector
+• Merge pull request #610 from Goodnessukaigwe/fix/456-zero-knowledge-groth16-proof-verifier-in-soroban-rust
+• [456] [Contract] Zero-Knowledge Groth16 Proof Verifier in Soroban Rust
+• Merge pull request #628 from adamsy1/feat/issue-47-backend-promql-query-aggregator-for-multi
+✨ feat: add PromQL aggregator for multi-cluster drift detection
+• Merge pull request #629 from Joshua13-stack/simple/476-563
+• Fix: 2 issues (#476, #563)
+• Merge pull request #630 from ola196/ola196-implement-cl-amm
+✨ feat: add CL AMM pricing foundation
+✨ feat: add CL AMM pricing foundation
+• Co-authored-by: Copilot App <223556219+Copilot@users.noreply.github.com>
+• simple: batch fix 2 issues
+• Co-authored-by: Simple Agent <agent@simple.dev>
+✨ feat: ## [Backend] PromQL Query Aggregator for Multi-Cluster Perfo (#47)
+• Merge pull request #611 from Goodnessukaigwe/fix/460-on-chain-rate-limiter-token-bucket-access-controller
+• [460] [Contract] On-Chain Rate Limiter & Token Bucket Access Controller
+• Merge pull request #612 from tilljack60-cmd/feat/issue-478-531-wasm-docs-flash-loan-receiver
+✨ feat(contracts): add FlashLoanReceiver trait with docstrings (#531)
+• Merge pull request #613 from tilljack60-cmd/fix/background-worker-init-log-532
+🐛 fix(#532): add background worker initialized log message
+• Merge branch 'main' into fix/background-worker-init-log-532
+• Merge pull request #614 from tilljack60-cmd/chore/update-frontend-ui-patch-versions
+📝 chore(frontend): update UI library patch versions (#533)
+• Merge pull request #615 from Rayhab2000/fix/529-format-rust
+• [Backend] Format Rust Files with cargo fmt
+• Merge pull request #616 from tilljack60-cmd/docs/issue-478-wasm-plugin-api-reference
+📝 docs(plugin): Wasm plugin API reference, tutorial, and troubleshootin…
+• Merge pull request #617 from CollinsKRO/main
+🐛 fix(frontend): add aria-expanded to SAN expand button in CertTable
+• Merge pull request #618 from Agencybuilds/docs/docker-socket-permissions
+📝 docs(local-dev): add troubleshooting note for Docker socket permissio…
+• Merge pull request #619 from edochieblessing09-max/feat/dropdown-aria-expanded
+✨ feat(a11y): add dynamic aria-expanded attributes to Dropdown toggle c…
+• Merge pull request #620 from Agencybuilds/test/upgrade-proxy-initialization
+📝 test(upgrade-proxy): add contract initialization tests
+• Merge pull request #621 from edochieblessing09-max/feat/log-viewer-empty-state
+✨ feat(frontend): add LogViewer empty state component for zero-result q…
+• Merge pull request #622 from edochieblessing09-max/feat/extract-default-max-gas-limit
+✨ feat(token-vault): extract DEFAULT_MAX_GAS_LIMIT and apply to executi…
+• Merge pull request #623 from Adecrown-77/issues216
+✨ feat(twap-oracle): implement TWAP oracle contract with price observation functionality
+• Merge pull request #624 from Adecrown-77/issues91
+✨ feat(dr): enhance DR client and integrate with command center
+• Merge pull request #625 from AugistineCreates/fix/issue-567-reconciler-unwrap-error-propagation
+🐛 fix(controller): replace .unwrap() with ? error propagation in status…
+• Merge pull request #627 from Adecrown-77/issue299
+🐛 refactor(batch-pay): remove processing lock and update error handling for batch processing
+🐛 refactor(batch-pay): remove processing lock and update error handling for batch processing
+✨ feat(rent-manager): add initial implementation of RentManager contract with deposit, withdraw, and restore functionalities
+🐛 fix(controller): replace .unwrap() with ? error propagation in status reconciler (#567)
+✨ feat(dr): enhance DR client and integrate with command center
+• - Updated DR client to include new properties in responses and improved error handling.
+• - Refactored command center to utilize DR client for triggering drills and resetting states.
+• - Added functionality to restore the latest phase state from the backend after reconnecting.
+• - Removed redundant fetch functions and replaced them with DR client methods.
+✨ feat(twap-oracle): implement TWAP oracle contract with price observation functionality
+✨ feat(token-vault): extract DEFAULT_MAX_GAS_LIMIT and apply to execution guards (#558)
+• Signed-off-by: edochieblessing09-max <edochieblessing09@gmail.com>
+✨ feat(frontend): add LogViewer empty state component for zero-result queries
+📝 test(upgrade-proxy): add contract initialization tests
+✨ feat(a11y): add dynamic aria-expanded attributes to Dropdown toggle component
+📝 docs(local-dev): add troubleshooting note for Docker socket permission errors
+🐛 fix(frontend): add aria-expanded to SAN expand button in CertTable
+• Adds dynamic aria-expanded attribute to the SAN (Subject Alternative Names)
+• expand/collapse button in cert_table.tsx for accessibility compliance.
+• Fixes #546
+📝 docs(plugin): Wasm plugin API reference, tutorial, and troubleshooting (#478)
+• Add comprehensive Wasm plugin development documentation:
+• - docs/plugins/wasm-api.md: complete API reference covering memory
+•   model, host functions (get_input_len, read_input, write_output,
+•   log_message), input/output JSON schemas, resource limits, plugin
+•   lifecycle, REST management API, and security model
+• - docs/plugins/wasm-troubleshooting.md: troubleshooting guide for
+•   common sandboxing errors (OOM, panic, timeout, fuel exhaustion,
+•   deterministic failures, build and deployment issues)
+• - examples/wasm-plugins/hello-world/: working tutorial plugin with
+•   step-by-step README, compilable Rust source, build script, and
+•   unit tests
+• Fix hello-world plugin to compile standalone outside the workspace
+• and provide native test stubs for host functions.
+📝 chore(frontend): update UI library patch versions (#533)
+• Update patch versions of UI libraries across all frontend package.json
+• files to incorporate security patches:
+• - @vitejs/plugin-react: 4.3.4 -> 4.7.0
+• - vite: 6.0.5 -> 6.4.5 (inspector: 4.5.9 -> 4.5.14)
+• - @types/react: 18.3.12/18.3.18 -> 18.3.31
+• - @types/react-dom: 18.3.1/18.3.5 -> 18.3.7
+• - @types/node: 22.10.1 -> 22.20.5
+• - typescript: 5.7.2 -> 5.7.3
+• - vitest: 2.1.8 -> 2.1.9
+• - recharts: 2.13.3 -> 2.15.4
+• - @testing-library/react: 16.0.1 -> 16.3.3
+• - @testing-library/jest-dom: 6.6.3 -> 6.10.0
+• - @testing-library/user-event: 14.5.2 -> 14.6.8
+• - ws: 8.18.0 -> 8.22.0
+• - eslint: 9.39.2 -> 9.39.5
+• All tests pass; no new failures introduced (pre-existing failures in
+• configurator and storage/explorer confirmed identical on main).
+• Refs: #533
+🐛 fix(#532): add background worker initialized log message
+• Add info!("Background worker initialized successfully") in the operator
+• startup sequence after all background workers have been spawned and
+• before the main controller reconciliation loop begins.
+• Also fix several pre-existing build blockers that prevented compilation:
+• - Remove non-existent color-eye dependency from Cargo.toml
+• - Fix [server-dependencies] -> [build-dependencies] for build.rs deps
+• - Restore accidentally emptied telemetry/src/parser.rs
+• - Add thiserror dependency to telemetry crate
+• - Fix broken let-else syntax in secret_rotation.rs tests
+• - Fix missing # in #[cfg] attributes in controller/mod.rs
+• - Fix duplicate code in org_validator.rs parse functions
+✨ feat(contracts): add FlashLoanReceiver trait with docstrings (#531)
+• Add contracts/flash-loan/src/receiver.rs defining the FlashLoanReceiver
+• trait with comprehensive Rust /// docstring comments covering:
+• - Module-level overview with ASCII call-flow diagram
+• - Full parameter documentation for execute_operation()
+• - Return value semantics and error handling
+• - Repayment invariant description
+• - Reentrancy behaviour explanation
+• - Two code examples (minimal pass-through and arbitrage pattern)
+• - Cross-references to FlashLoanPool, Error variants, and quote_fee
+• Also declare pub mod receiver in lib.rs so cargo doc picks it up.
+• Closes #531
+• Add a per-caller token-bucket rate limiter for Soroban entry points.
+• Refill from ledger sequence with saturating arithmetic, isolate callers, and return RateLimitError instead of panicking when tokens are exhausted.
+• Co-authored-by: Cursor <cursoragent@cursor.com>
+• Implement BN254 Groth16 pairing checks under the Soroban budget.
+• Reject malformed and cryptographically inconsistent proofs, charge the agreed 1-public-input benchmark at 1.2M instructions, and document the VK/proof format.
+• Co-authored-by: Cursor <cursoragent@cursor.com>
+• Add eBPF network telemetry with pod mapping and fallback.
+• Load an Aya-style socket collector when kernel privileges exist; otherwise export standard Prometheus metrics without crashing the operator.
+• Co-authored-by: Cursor <cursoragent@cursor.com>
+• Preserve module sources during formatting
+• Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+• Fix Rust formatting compliance
+• Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>
+
+
 ## Chart v2.21.0 (2026-10-03) [minor]
 
 • Merge pull request #431 from Okorie2000-code/feat/p2p-gossip-firewall-issue-221
