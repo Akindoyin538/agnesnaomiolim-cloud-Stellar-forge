@@ -71,6 +71,7 @@ fn ensure_not_paused(env: &Env) {
     assert!(!paused, "contract is paused");
 }
 
+
 #[contractimpl]
 impl TokenVault {
     /// Initializes the token vault with administrative control and metadata.
@@ -88,6 +89,7 @@ impl TokenVault {
         name: String,
         symbol: String,
     ) {
+    pub fn initialize(env: Env, admin: Address, decimals: u32, name: String, symbol: String) {
         assert!(
             !env.storage().instance().has(&DataKey::Admin),
             "already initialized"
@@ -125,6 +127,8 @@ impl TokenVault {
         env.storage().instance().set(&DataKey::Paused, &paused);
     }
 
+
+
     /// Mints new tokens to a designated recipient address.
     ///
     /// # Arguments
@@ -134,6 +138,7 @@ impl TokenVault {
     pub fn mint(env: Env, to: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
+
         let admin: Address = env
             .storage()
             .instance()
@@ -218,6 +223,7 @@ impl TokenVault {
         let from_balance = balance(&env, &from);
         assert!(from_balance >= amount, "insufficient balance");
 
+
         set_balance(&env, &from, from_balance - amount);
         set_balance(
             &env,
@@ -233,6 +239,7 @@ impl TokenVault {
     pub fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
         require_amount(amount);
         ensure_not_paused(&env);
+
         spender.require_auth();
         let data = allowance(&env, &from, &spender);
         assert!(
@@ -249,6 +256,7 @@ impl TokenVault {
         );
         let from_balance = balance(&env, &from);
         assert!(from_balance >= amount, "insufficient balance");
+
         set_balance(&env, &from, from_balance - amount);
         set_balance(
             &env,
@@ -267,6 +275,7 @@ impl TokenVault {
         from.require_auth();
         let current = balance(&env, &from);
         assert!(current >= amount, "insufficient balance");
+
         set_balance(&env, &from, current - amount);
         let supply: i128 = env
             .storage()
@@ -286,6 +295,14 @@ mod tests {
     use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
     fn setup() -> (Env, TokenVaultClient<'static>, Address, Address, Address, Address) {
+    fn setup() -> (
+        Env,
+        TokenVaultClient<'static>,
+        Address,
+        Address,
+        Address,
+        Address,
+    ) {
         let env = Env::default();
         env.mock_all_auths();
 

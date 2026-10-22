@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use super::{TokenVault, TokenVaultClient};
+
 use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
 fn setup() -> (Env, TokenVaultClient<'static>, Address, Address, Address) {
@@ -86,4 +87,6 @@ fn test_negative_amount_transfer_panics() {
 
     client.mint(&alice, &100);
     client.transfer(&alice, &bob, &-1);
+
+
 }
