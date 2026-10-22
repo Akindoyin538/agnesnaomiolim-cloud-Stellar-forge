@@ -118,6 +118,7 @@ impl TokenVault {
     }
 
 
+
     /// Mints new tokens to a designated recipient address.
     ///
     /// # Arguments
@@ -263,5 +264,86 @@ impl TokenVault {
             .instance()
             .set(&DataKey::TotalSupply, &(supply - amount));
         env.events().publish((symbol_short!("burn"), from), amount);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use soroban_sdk::{testutils::Address as _, Address, Env, String};
+
+    fn setup() -> (
+        Env,
+        TokenVaultClient<'static>,
+        Address,
+        Address,
+        Address,
+        Address,
+    ) {
+        let env = Env::default();
+        env.mock_all_auths();
+
+        let admin = Address::generate(&env);
+        let alice = Address::generate(&env);
+        let bob = Address::generate(&env);
+        let spender = Address::generate(&env);
+
+        let contract_id = env.register(TokenVault, ());
+        let client = TokenVaultClient::new(&env, &contract_id);
+
+        client.initialize(
+            &admin,
+            &7,
+            &String::from_str(&env, "Token Vault"),
+            &String::from_str(&env, "TVLT"),
+        );
+
+        (env, client, admin, alice, bob, spender)
+    }
+
+    #[test]
+    #[should_panic(expected = "insufficient allowance")]
+    fn test_transfer_from_exhausted_allowance_panics() {
+        let (_env, client, _admin, alice, bob, spender) = setup();
+
+        // Mint initial tokens to alice
+        client.mint(&alice, &1000);
+        assert_eq!(client.balance(&alice), 1000);
+
+        // Alice approves spender for 100 tokens
+        client.approve(&alice, &spender, &100, &0);
+        assert_eq!(client.allowance(&alice, &spender), 100);
+
+        // Spender transfers the full approved amount (100 tokens) to bob
+        client.transfer_from(&spender, &alice, &bob, &100);
+        assert_eq!(client.balance(&alice), 900);
+        assert_eq!(client.balance(&bob), 100);
+
+        // Verify that the allowance is now completely exhausted (0 remaining)
+        assert_eq!(client.allowance(&alice, &spender), 0);
+
+        // Attempting to transfer more tokens when allowance is exhausted must safely revert
+        client.transfer_from(&spender, &alice, &bob, &1);
+    }
+
+    #[test]
+    #[should_panic(expected = "insufficient allowance")]
+    fn test_transfer_from_exceeds_remaining_allowance_panics() {
+        let (_env, client, _admin, alice, bob, spender) = setup();
+
+        client.mint(&alice, &1000);
+
+        // Alice approves spender for 100 tokens
+        client.approve(&alice, &spender, &100, &0);
+        assert_eq!(client.allowance(&alice, &spender), 100);
+
+        // Partial transfer of 60 tokens, leaving 40 allowance
+        client.transfer_from(&spender, &alice, &bob, &60);
+        assert_eq!(client.balance(&alice), 940);
+        assert_eq!(client.balance(&bob), 60);
+        assert_eq!(client.allowance(&alice, &spender), 40);
+
+        // Attempting to transfer 50 tokens (exceeding remaining allowance of 40) must safely revert
+        client.transfer_from(&spender, &alice, &bob, &50);
     }
 }
