@@ -1,1 +1,438 @@
-IyBMb2NhbCBEZXZlbG9wbWVudCB3aXRoIGtpbmQKClRoaXMgZ3VpZGUgdGFrZXMgeW91IGZyb20gYSBjbGVhbiBtYWNoaW5lIHRvIGEgcnVubmluZyBTdGVsbGFyLUs4cyBvcGVyYXRvciBvbiBhCmxvY2FsIFtraW5kXShodHRwczovL2tpbmQuc2lncy5rOHMuaW8vKSBjbHVzdGVyLCB3aXRoIGhvdC1yZWxvYWRpbmcgYW5kCmludGVncmF0aW9uIHRlc3RzLiBUYXJnZXQgdGltZSBvbiBhIG1hY2hpbmUgdGhhdCBhbHJlYWR5IGhhcyBEb2NrZXI6ICoq dW5kZXIgMTUKbWludXRlcyoqLCBtb3N0IG9mIGl0IHRoZSBmaXJzdCBSdXN0IGJ1aWxkLgoKSWYgeW91IHdvdWxkIHJhdGhlciB1c2Uga2NkLCBzZWUgW2szZCBsb2NhbCBkZXZlbG9wbWVudF0oLi4vZGV2ZWxvcG1lbnQubWQpLgpGb3IgdGhlIGZ1bGwgcmVmZXJlbmNlIG9uIGJ1aWxkaW5nLCB0ZXN0aW5nIGFuZCBjb250cmlidXRpbmcsIHNlZQpbREVWRUxPUE1FTlQubWRdKC4uLy4uL0RFVkVMT1BNRU5ULm1kKS4KCi0tLQoKIyMgQ29udGVudHMKCi0gW1Bpbm5lZCB2ZXJzaW9uc10oI3Bpbm5lZC12ZXJzaW9ucykKLSBbUGxhdGZvcm0gc2V0dXBdKCNwbGF0Zm9ybS1zZXR1cCkKLSBbVGhlIDE1LW1pbnV0ZSBwYXRoXSgjdGhlLTE1LW1pbnV0ZS1wYXRoKQotIFtIb3QtcmVsb2FkaW5nIHRoZSBvcGVyYXRvcl0oI2hvdC1yZWxvYWRpbmctdGhlLW9wZXJhdG9yKQotIFtJbnRlZ3JhdGlvbiB0ZXN0cyBhZ2FpbnN0IGtpbmRdKCNpbnRlZ3JhdGlvbi10ZXN0cy1hZ2FpbnN0LWtpbmQpCi0gW1J1bm5pbmcgdGVzdHMgZm9yIGEgc2luZ2xlIHBhY2thZ2VdKCNydW5uaW5nLXRlc3RzLWZvci1hLXNpbmdsZS1wYWNrYWdlKQotIFtNYWtlZmlsZSBzaG9ydGN1dHNdKCNtYWtlZmlsZS1zaG9ydGN1dHMpCi0gW0RpYWdub3N0aWNzXSgjZGlhZ25vc3RpY3MpCi0gW1RlYXJkb3duXSgjdGVhcmRvd24pCgotLS0KCiMjIFBpbm5lZCB2ZXJzaW9ucwoKVXNlIHRoZXNlIHZlcnNpb25zLiBUaGV5IGFyZSB0aGUgb25lcyB0aGlzIHJlcG9zaXRvcnkgYWN0dWFsbHkgYnVpbGRzIGFuZCB0ZXN0cwphZ2FpbnN0OyBhbnl0aGluZyBvbGRlciBpcyB1bnRlc3RlZC4KCnwgVG9vbCB8IFZlcnNpb24gfCBXaGVyZSBpdCBjb21lcyBmcm9tIHwKfCAtLS0gfCAtLS0gfCAtLS0gfAp8IFJ1c3QgfCBzdGFibGUgKioxLjkyKyogKG1pbmltdW0gMS44OCkgfCBgUkVBRE1FLm1kYCBhbmQgYENPTlRSSUJVVElORy5tZGAgc3RhdGUgMS44OCs7IHRoZSBDSSBNU1JVIGpvYiBwaW5zIGAxLjkyYCAoYC5naXRodWIvd29ya2Zsb3dzL2NpLnltbGApIHwKfCBEb2NrZXIgfCAqKjI0LjArKiogd2l0aCBCdWlsZEtpdCBlbmFibGVkLCBDb21wb3NlIHYyIHwgYG1ha2UgcXVpY2tzdGFydGAgYnVpbGRzIHdpdGggYERPQ0tFUl9CVUlMREtJVD0xYDsgYGRvY2tlci1jb21wb3NlLmRldi55bWxgIGlzIGEgQ29tcG9zZSBvdmVybGF5IHwKfCBraW5kIHwgKiowLjIwLjArKiogfCBgREVWRUxPUE1FTlQubWRgIGluc3RhbGwgc25pcHBldDsgQ0kgcHJvdmlzaW9ucyBjbHVzdGVycyB3aXRoIGBoZWxtL2tpbmQtYWN0aW9uQHYxLjE0LjBgIHwKfCBrdWJlY3RsIHwgKioxLjMwLngqKiB8IHRoZSBvcGVyYXRvciBjb21waWxlcyBhZ2FpbnN0IGBrOHMtb3BlbmFwaWAgZmVhdHVyZSBgdjFfMzBgIChgQ2FyZ28udG9tbGApLCBzbyBtYXRjaCB0aGUgY2x1c3RlcidzIG1pbm9yIHZlcnNpb24gfAp8IEhlbG0gfCAqKjMuMTQuMCoqIHwgcGlubmVkIGluIENJIHZpYSBgYXp1cmUvc2V0dXAtaGVsbUB2NGAgKGAuZ2l0aHViL3dvcmtmbG93cy9jaS55bWxgKSB8Cgo+ICoqTm90ZSBvbiBSdXN0IHZlcnNpb25zLioqIFRoZSByZXBvc2l0b3J5IGN1cnJlbnRseSBuYW1lcyBmb3VyIGRpZmZlcmVudCBSdXN0Cj4gdmVyc2lvbnM6IDEuODggaW4gYFJFQURNRS5tZGAvYENPTlRSSUJVVElORy5tZGAsIDEuOTIgaW4gdGhlIENJIE1TUlYgam9iLAo+IDEuOTMgaW4gdGhlIGBjYXJnby1jaGVmYCBiYXNlIGltYWdlIGluIGBEb2NrZXJmaWxlYCwgYW5kIDEuOTQgaW4KPiBgRG9ja2VyZmlsZS5kZXZgLiBMb2NhbCBkZXZlbG9wbWVudCBvbiBzdGFibGUgMS45MiBvciBuZXdlciBzYXRpc2ZpZXMgYWxsIG9mCj4gdGhlbS4gQ29uc29saWRhdGluZyB0aG9zZSBpbnRvIGEgc2luZ2xlIGBydXN0LXZlcnNpb25gIGZpZWxkIGluIGBDYXJnby50b21sYAo+IHdvdWxkIGJlIGEgZ29vZCBmb2xsb3ctdXAuCgpWZXJpZnkgZXZlcnl0aGluZyBhdCBvbmNlIGJlZm9yZSB5b3Ugc3RhcnQ6CgpgYGBiYXNoCnJ1c3RjIC0tdmVyc2lvbiAgICMgMS45Mi4wIG9yIG5ld2VyCmRvY2tlciAtLXZlcnNpb24gICMgMjQueCBvciBuZXdlcgpkb2NrZXIgcHMgICAgICAgICAjIG11c3Qgc3VjY2VlZDogdGhlIGRhZW1vbiBoYXMgdG8gYmUgcnVubmluZwpraW5kIHZlcnNpb24gICAgICAjIDAuMjAuMCBvciBuZXdlcgprdWJlY3RsIHZlcnNpb24gLS1jbGllbnQKaGVsbSB2ZXJzaW9uIC0tc2hvcnQgICMgdjMuMTQueAoKYGBgCgotLS0KCiMjIFBsYXRmb3JtIHNldHVwCgojIyMgTGludXgKCmBgYGJhc2gKIyBSdXN0CmN1cmwgLS1wcm90byAnPWh0dHBzJyAtLXRsc3YxLjIgLXNTZiBodHRwczovL3NoLnJ1c3R1cC5ycyB8IHNoCnNvdXJjZSAiJEhPTUUvLmNhcmdvL2VudiIKCiMgRG9ja2VyIEVuZ2luZSDigJQgZm9sbG93IGh0dHBzOi8vZG9jcy5kb2NrZXIuY29tL2VuZ2luZS9pbnN0YWxsLyBmb3IgeW91ciBkaXN0cm8sCiMgdGhlbiBhbGxvdyBub24tcm9vdCB1c2Ugc28gYGRvY2tlciBwc2Agd29ya3Mgd2l0aG91dCBzdWRvOgpzdWRvIHVzZXJtb2QgLWFHIGRvY2tlciAiJFVTRVIiICAgIyBsb2cgb3V0IGFuZCBiYWNrIGluIGFmdGVyd2FyZHMKCiMga2luZApjdXJsIC1MbyAuL2tpbmQgaHR0cHM6Ly9raW5kLnNpZ3MuazhzLmlvL2RsL3YwLjIwLjAva2luZC1saW51eC1hbWQ2NApjaG1vZCAreCAuL2tpbmQgJiYgc3VkbyBtdiAuL2tpbmQgL3Vzci9sb2NhbC9iaW4va2luZAoKIyBrdWJlY3RsIChwaWNrIHRoZSAxLjMwIGxpbmUgdG8gbWF0Y2ggdGhlIG9wZXJhdG9yJ3MgazhzLW9wZW5hcGkgZmVhdHVyZXMpCmN1cmwgLUxPICJodHRwczovL2RsLms4cy5pby9yZWxlYXNlL3YxLjMwLjAvYmluL2xpbnV4L2FtZDY0L2t1YmVjdGwiCmNobW9kICt4IGt1YmVjdGwgJiYgc3VkbyBtdiBrdWJlY3RsIC91c3IvbG9jYWwvYmluLwoKIyBIZWxtCmN1cmwgaHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL2hlbG0vaGVsbS9tYWluL3NjcmlwdHMvZ2V0LWhlbG0tMyB8IGJhc2gKYGBgCgpSYWlzZSB0aGUgaW5vdGlmeSBsaW1pdHMgYmVmb3JlIHJ1bm5pbmcgYGtpbmRgIG9yIGBjYXJnbyB3YXRjaGAuIEJvdGggY29uc3VtZQp3YXRjaGVzIGFnZ3Jlc3NpdmVseSwgYW5kIHRoZSBkZWZhdWx0IGxpbWl0cyBvbiBtb3N0IGRpc3RyaWJ1dGlvbnMgYXJlIGxvdwplbm91Z2ggdGhhdCBjbHVzdGVycyBmYWlsIHRvIHN0YXJ0IHdpdGggY3J5cHRpYyBlcnJvcnM6CgpgYGBiYXNoCnN1ZG8gc3lzY3RsIGZzLmlub3RpZnkubWF4X3VzZXJfd2F0Y2hlcz01MjQyODgKc3VkbyBzeXNjdGwgZnMuaW5vdGlmeS5tYXhfdXNlcl9pbnN0YW5jZXM9NTEyCiMgUGVyc2lzdCBhY3Jvc3MgcmVib290czoKZWNobyAtZSAiZnMuaW5vdGlmeS5tYXhfdXNlcl93YXRjaGVzPTUyNDI4OFxuZnMuaW5vdGlmeS5tYXhfdXNlcl9pbnN0YW5jZXM9NTEyIiBcCiAgfCBzdWRvIHRlZSAvZXRjL3N5c2N0bC5kLzk5LWtpbmQuY29uZgpgYGAKCiMjIyBtYWNPUwoKYGBgYmFzaAphcmNoIC1hcm0gfCBncmVwIGFybTY0ICYmIGVjaG8gIkFwcGxlIFNpbGljb24iCmJyZXcgaW5zdGFsbCBydXN0dXAtaW5pdCAmJiBydXN0dXAtaW5pdCAgICMgb3IgdGhlIGN1cmwgaW5zdGFsbGVyIGFib3ZlCmJyZXcgaW5zdGFsbCBraW5kIGt1YmVjdGwgaGVsbQpicmV3IGluc3RhbGwgLS1jYXNrIGRvY2tlciAgICAgICAgICAgICAgICAjIERvY2tlciBEZXNrdG9wCmBgYAoKU3RhcnQgRG9ja2VyIERlc2t0b3AgYW5kIGdpdmUgaXQgZW5vdWdoIGhlYWRyb29tIGJlZm9yZSBjcmVhdGluZyBhIGNsdXN0ZXI6CioqU2V0dGluZ3Mg4oaSIFJlc291cmNlcyDihpIgYXQgbGVhc3QgNCBDUFVzLCA4IEdCIG1lbW9yeSwgNDAgR0IgZGlzayoqLiBUaGUKZGVmYXVsdHMgKDIgQ1BVIC8gMiBHQiBvbiBvbGRlciBpbnN0YWxscykgYXJlIG5vdCBlbm91Z2ggdG8gYnVpbGQgdGhlIG9wZXJhdG9yCmFuZCBydW4gYSBraW5kIGNsdXN0ZXIgYXQgdGhlIHNhbWUgdGltZS4KCkFwcGxlIFNpbGljb246IGV2ZXJ5dGhpbmcgYmVsb3cgd29ya3MgbmF0aXZlbHkgb24gYXJtNjQuIFRoZSBpbWFnZXMgdGhlCm9wZXJhdG9yIGJ1aWxkcyBhcmUgc2luZ2xlLWFyY2ggYnkgZGVmYXVsdDsgdXNlIGBtYWtlIGRvY2tlci1tdWx0aWFyY2hgIG9ubHkKd2hlbiB5b3UgbmVlZCB0byBwdXNoIGEgY3Jvc3MtcGxhdGZvcm0gaW1hZ2UuCgojIyMgV2luZG93cyAoV1NMMikKCkRvIGFsbCBkZXZlbG9wbWVudCAqKmluc2lkZSoqIHRoZSBXU0wyIGZpbGVzeXN0ZW0uIFdvcmtpbmcgb3V0IG9mIGAvbW50L2NgCm1ha2VzIFJ1c3QgYnVpbGRzIHNldmVyYWwgdGltZXMgc2xvd2VyIGFuZCBicmVha3MgZmlsZS1jaGFuZ2UgZXZlbnRzLCBzbwpoYXQtcmVsb2FkaW5nIHdpbGwgc2lsZW50bHkgbm90IGZpcmUuCgoxLiBJbnN0YWxsIFdTTDIgYW5kIGEgZGlzdHJvIChQb3dlclNoZWxsIGFzIEFkbWluaXN0cmF0b3IpOgogICBgYGBwb3dlcnNoZWxsCiAgIHdzbCAtLWluc3RhbGwgLWQgVWJ1bnR1LTIyLjA0CiAgIGBgYAoyLiBJbnN0YWxsIERvY2tlciBEZXNrdG9wLCB0aGVuIGVuYWJsZSAqKlNldHRpbmdzIOKGkiBSZXNvdXJjZXMg4oaSIFdTTCBJbnRlZ3JhdGlvbioqCiAgIGZvciB5b3VyIGRpc3Ryby4gYGRvY2tlciBwc2AgbXVzdCBzdWNjZWVkIGZyb20gaW5zaWRlIFdTTC4KMy4gQ2xvbmUgaW50byB0aGUgTGludXggZmlsZXN5c3RlbSwgZS5nLiBgfi9zcmMvc3RlbGxhci1rOHNgLCAqKm5vdCoqIGAvbW50L2MvLi4uYC4KNC4gRm9sbG93IHRoZSBMaW51eCBzdGVwcyBhYm92ZSBmb3IgUnVzdCwga2luZCwga3ViZWN0bCBhbmQgSGVsbS4KNS4gQ2FwIFdTTDIncyBtZW1vcnkgc28gYSBraW5kIGNsdXN0ZXIgcGx1cyBhIFJ1c3QgYnVpbGQgZG9lcyBub3QgZXhoYXVzdCB0aGUKICAgaG9zdC4gQ3JlYXRlIGBDOlxVc2Vyc1w8eW91Plwud3NsY29uZmlnYDoKICAgYGBgaW5pCiAgIFt3c2wyXQogICBtZW1vcnk9OEdCCiAgIHByb2Nlc3NvcnM9NAogICBzd2FwPTJHQgogICBgYGAKICAgVGhlbiBgd3NsIC0tc2h1dGRvd25gIGZyb20gUG93ZXJTaGVsbCBhbmQgcmVvcGVuIHlvdXIgc2hlbGwuCgotLS0KCiMjIFRoZSAxNS1taW51dGUgcGF0aAoKRnJvbSBhIGNsZWFuIGNsb25lOgoKYGBgYmFzaApnaXQgY2xvbmUgaHR0cHM6Ly9naXRodWIuY29tL2FnbmVzbmFvbWlvbGltLWNsb3VkL1N0ZWxsYXItSzhzLmdpdApjZCBTdGVsbGFyLUs4cwoKIyAxLiBUb29sY2hhaW46IHJ1c3R1cCBjb21wb25lbnRzLCBjYXJnby1hdWRpdCwgY2FyZ28td2F0Y2gsIHByZS1jb21taXQgaG9va3MKbWFrZSBkZXYtc2V0dXAKCiMgMi4gRXZlcnl0aGluZyBlbHNlOiBraW5kIGNsdXN0ZXIsIG9wZXJhdG9yIGltYWdlLCBDUkQsIEhlbG0gcmVsZWFzZSwgc2FtcGxlIG5vZGUKbWFrZSBxdWlja3N0YXJ0CmBgYAoKYG1ha2UgcXVpY2tzdGFydGAgaXMgdGhlIHdob2xlIGxvY2FsIGVudmlyb25tZW50IGluIG9uZSB0YXJnZXQuIEl0OgoKMS4gY2hlY2tzIHRoYXQgYGtpbmRgLCBga3ViZWN0bGAgYW5kIGBoZWxtYCBhcmUgb24gYFBBVEhgIGFuZCBmYWlscyBlYXJseSBpZiBub3Q7CjIuIGNyZWF0ZXMgdGhlIGtpbmQgY2x1c3RlciAqKmA/c3RlbGxhci1kZXZgKiogKHJldXNlcyBpdCBpZiBpdCBhbHJlYWR5IGV4aXN0cyk7CjMuIHJ1bnMgYG1ha2UgYnVpbGRgIChgY2FyZ28gYnVpbGQgLS1yZWxlYXNlIC0tbG9ja2VkYCk7CjQuIGJ1aWxkcyB0aGUgYHN0ZWxsYXItb3BlcmF0b3I6ZGV2YCBpbWFnZSBmcm9tIHRoZSBgcnVudGltZS1sb2NhbGAgc3RhZ2Ugb2YKICAgYERvY2tlcmZpbGVgLCB3aGljaCBjb3BpZXMgdGhlIGhvc3QtYnVpbHQgYmluYXJpZXMgcmF0aGVyIHRoYW4gcmVidWlsZGluZwogICB0aGVtIGluIHRoZSBjb250YWluZXI7CjUuIGBraW5kIGxvYWQgZG9ja2VyLWltYWdlYCB0byBwdXNoIHRoYXQgaW1hZ2UgaW50byB0aGUgY2x1c3RlcjsKNi4gYXBwbGllcyBgY29uZmlnL2NyZC9zdGVsbGFybm9kZS1jcmQueWFtbGA7CjcuIGNyZWF0ZXMgdGhlIGBzdGVsbGFyLXN5c3RlbWAgbmFtZXNwYWNlOwo4LiBgaGVsbSB1cGdyYWRlIC0taW5zdGFsbGAgZnJvbSBgY2hhcnRzL3N0ZWxsYXItb3BlcmF0b3JgIHdpdGgKICAgYGltYWdlLnRhZz1kZXZgIGFuZCBgaW1hZ2UucHVsbFBvbGljeT1OZXZlcmA7CjkuIGFwcGxpZXMgYGNvbmZpZy9zYW1wbGVzL3Rlc3Qtc3RlbGxhcm5vZGUueWFtbGAuCgpWZXJpZnk6CgpgYGBiYXNoCmt1YmVjdGwgZ2V0IHN0ZWxsYXJub2RlIC1uIHN0ZWxsYXItc3lzdGVtIC13Cmt1YmVjdGwgZ2V0IGRlcGxveSxzdHMsc3ZjLHB2YyAtbiBzdGVsbGFyLXN5c3RlbQprdWJlY3RsIGxvZ3MgLW4gc3RlbGxhci1zeXN0ZW0gZGVwbG95L3N0ZWxsYXItb3BlcmF0b3IgLWYKYGBgCgoqKldoZXJlIHRoZSB0aW1lIGdvZXMuKiogU3RlcHMgMeKAkzIgYW5kIDXigJM5IHRha2Ugcm91Z2hseSB0d28gbWludXRlcy4gU3RlcCAzIGlzCnRoZSBjb2xkIFJ1c3QgcmVsZWFzZSBidWlsZCwgd2hpY2ggZG9taW5hdGVzOiBleHBlY3QgOOKAkzEyIG1pbnV0ZXMgb24gZm91ciBjb3Jlcwp0aGUgZmlyc3QgdGltZSBhbmQgd2VsbCB1bmRlciBhIG1pbnV0ZSBhZnRlcndhcmRzLCBzaW5jZSB0aGUgYnVpbGQgY2FjaGUgaXMKcmV1c2VkLiBJZiB5b3Ugd2FudCB0byBvdmVybGFwIHRoZSB3YWl0LCBydW4gYG1ha2UgYnVpbGRgIGZpcnN0IGluIG9uZSBzaGVsbCBhbmQKYG1ha2UgcXVpY2tzdGFydGAgYWZ0ZXIgaXQgZmluaXNoZXMuCgotLS0KCiMjIEhvdC1yZWxvYWRpbmcgdGhlIG9wZXJhdG9yCgpUd28gd29ya2Zsb3dzLCBkZXBlbmRpbmcgb24gd2hldGhlciB5b3Ugd2FudCB0aGUgb3BlcmF0b3Igb24gdGhlIGhvc3Qgb3IgaW4gYQpjb250YWluZXIuCgojIyMgSG9zdCBwcm9jZXNzIGFnYWluc3QgdGhlIGtpbmQgY2x1c3RlciAoZmFzdGVzdCBpbm5lciBsb29wKQoKYGBgYmFzaAptYWtlIHJ1bi1kZXYgICAjIFJVU1RfTE9HPWRlYnVnIGNhcmdvIHdhdGNoIC14IHJ1bgpgYGAKCmBjYXJnbyB3YXRjaGAgcmVidWlsZHMgYW5kIHJlc3RhcnRzIHRoZSBvcGVyYXRvciBvbiBldmVyeSBzYXZlLiBJdCB0YWxrcyB0bwp3aGF0ZXZlciBjbHVzdGVyIHlvdXIgY3VycmVudCBrdWJlY29uZmlnIGNvbnRleHQgcG9pbnRzIGF0LCBzbyBtYWtlIHN1cmUgdGhhdCBpcwp0aGUga2luZCBjbHVzdGVyOgoKYGBgYmFzaAprdWJlY3RsIGNvbmZpZyB1c2UtY29udGV4dCBraW5kLXN0ZWxsYXItZGV2CmBgYAoKU2NhbGUgdGhlIGluLWNsdXN0ZXIgb3BlcmF0b3IgdG8gemVybyBmaXJzdCwgb3IgdGhlIHR3byB3aWxsIGZpZ2h0IG92ZXIgdGhlIHNhbWUKcmVzb3VyY2VzOgoKYGBgYmFzaAprdWJlY3RsIHNjYWxlIGRlcGxveS9zdGVsbGFyLW9wZXJhdG9yIC1uIHN0ZWxsYXItc3lzdGVtIC0tcmVwbGljYXM9MApgYGAKClJlbGF0ZWQgdGFyZ2V0czogYG1ha2UgcnVuLWxvY2FsYCBydW5zIHRoZSByZWxlYXNlIGJpbmFyeSBvbmNlIHdpdGhvdXQKd2F0Y2hpbmcsIGFuZCBgbWFrZSB3YXRjaGAgcnVucyBgY2FyZ28gd2F0Y2ggLXggY2hlY2sgLXggdGVzdCAtLWIgd2hlbiB5b3UKd2FudCBjb250aW51b3VzIGNoZWNraW5nIHJhdGhlciB0aGFuIGEgcnVubmluZyBvcGVyYXRvci4KCiMjIyBDb250YWluZXJpc2VkIGhvdC1yZWxvYWQKCmBgYGJhc2gKbWFrZSBjb21wb3NlLWRldiAgICMgZG9ja2VyLWNvbXBvc2UueW1sICsgZG9ja2VyLWNvbXBvc2UuZGV2LnltbApgYGAKClRoaXMgcnVucyB0aGUgb3BlcmF0b3IgZnJvbSBgRG9ja2VyZmlsZS5kZXZgIHdpdGggYGNhcmdvIHdhdGNoYCBpbnNpZGUgdGhlCmNvbnRhaW5lciwgbW91bnRpbmcgdGhlIHNvdXJjZSB0cmVlIGF0IGAvYXBwYCB3aXRoIHBlcnNpc3RlbnQgY2FyZ28gYW5kIHRhcmdldApjYWNoZXMsIGBSVVNUX0xPRz1kZWJ1ZyxzdGVsbGFyX2s4cz10cmFjZWAsIGFuZCBgLS1kcnktcnVuYCBlbmFibGVkLiBVc2UgaXQgd2hlbgp5b3Ugd2FudCBhbiBlbnZpcm9ubWVudCBjbG9zZXIgdG8gQ0kuIGBtYWtlIGNvbXBvc2UtbG9nc2AgdGFpbHMgaXQgYW5kCmBtYWtlIGNvbXBvc2UtZG93bmAgc3RvcHMgaXQuCgo+IE9uIFdTTDIgYW5kIG1hY09TLCBpbi1jb250YWluZXIgZmlsZSB3YXRjaGluZyBvbmx5IHdvcmtzIHJlbGlhYmx5IHdoZW4gdGhlCj4gc291cmNlIHRyZWUgbGl2ZXMgaW4gdGhlIExpbnV4L1ZNIGZpbGVzeXN0ZW0uIFNlZSB0aGUgcGxhdGZvcm0gbm90ZXMgYWJvdmUuCgotLS0KCiMjIEludGVncmF0aW9uIHRlc3RzIGFnYWluc3Qga2luZAoKVW5pdCBhbmQgZG9jIHRlc3RzIG5lZWQgbm8gY2x1c3RlcjoKCmBgYGJhc2gKbWFrZSB0ZXN0CmBgYAoKVGhlIGtpbmQgZW5kLXRvLWVuZCBzdWl0ZSBpcyBgI1tpZ25vcmVdYGQgYnkgZGVmYXVsdCBzbyBpdCBuZXZlciBydW5zIGluIGEKbm9ybWFsIGBjYXJnbyB0ZXN0YC4gUnVuIGl0IGV4cGxpY2l0bHkgYWdhaW5zdCBhIGxpdmUgY2x1c3RlcjoKCmBgYGJhc2gKY2FyZ28gdGVzdCAtLXRlc3QgZTJlX2tpbmQgLS0gLS1pZ25vcmVkIC0tbm9jYXB0dXJlCmBgYAoKVGhlIGhhcm5lc3MgY3JlYXRlcyBvciByZXVzZXMgYSBjbHVzdGVyIG5hbWVkICoqYHN0ZWxsYXItZTJlYCoqLCB3aGljaCBpcwpkZWxpYmVyYXRlbHkgKm5vdCogdGhlIGBzdGVsbGFyLWRldmAgY2x1c3RlciBgbWFrZSBxdWlja3N0YXJ0YCBidWlsZHMsIHNvIGEgdGVzdApydW4gY2Fubm90IGRlc3Ryb3kgeW91ciBkZXZlbG9wbWVudCBlbnZpcm9ubWVudC4gUG9pbnQgaXQgYXQgYW5vdGhlciBjbHVzdGVyCndpdGg6CgpgYGBiYXNoCktJTkRfQ0xVU1RFUl9OQU1FPXN0ZWxsYXItZGV2IGNhcmdvIHRlc3QgLS10ZXN0IGUyZV9raW5kIC0tIC0taWdub3JlZApgYGAKClRoZSBzdWl0ZSBpbnN0YWxscyBDUkRzIGZyb20gYGNvbmZpZy9jcmQvYCwgYXBwbGllcyBzYW1wbGUgYFN0ZWxsYXJOb2RlYCBtYW5pZmVzdHMsIGFuZCB3YWl0cyBmb3IgdGhlIG9wZXJhdG9yIHRvIHJlY29uY2lsZSBEZXBsb3ltZW50cyBhbmQgU2VydmljZXMKYWNyb3NzIHRoZSBgc3RlbGxhci1lMmUsYCBgc3RlbGxhci1lMmUtaG9yaXpvbmAgYW5kIGBzdGVsbGFyLWUyZS11cGdyYWRlYApuYW1lc3BhY2VzLiBJdCBza2lwcyBpdHNlbGYgd2hlbiBga2luZGAva3ViZWN0bGAgYXJlIG1pc3NpbmcgcmF0aGVyIHRoYW4KZmFpbGluZywgc28gYSBncmVlbiBydW4gd2l0aCBubyBvdXRwdXQgbWVhbnMgdGhlIHRvb2xzIHdlcmUgbm90IGZvdW5kIOKAlCBjaGVjawp0aGF0IGJvdGggYXJlIG9uIGBQQVRIdWAuCgpPdGhlciBzdWl0ZXMgaW4gYHRlc3RzL2AgKGNoYW9zLCBEUiBmYWlsb3ZlciwgbGVhZGVyIGVsZWN0aW9uLCBzZWNyZXQgcm90YXRpb24sCnNlcnZpY2UgbWVzaCkgZm9sbG93IHRoZSBzYW1lIGAtaWdub3JlZGAgY29udmVudGlvbiB3aGVyZSB0aGV5IG5lZWQgYSBjbHVzdGVyLgoKQmVmb3JlIG9wZW5pbmcgYSBQUiwgcnVuIHdoYXQgQ0kgcnVuczoKCmBgYGJhc2gKbWFrZSBjaS1sb2NhbCAgICMgZm10LWNoZWNrICsgbGludCArIGF1ZGl0ICsgdGVzdCArIGJ1aWxkCmBgYAoKLS0tCgojIyBSdW5uaW5nIHRlc3RzIGZvciBhIHNpbmdsZSBwYWNrYWdlCgpUaGlzIHdvcmtzcGFjZSBjb250YWlucyBtdWx0aXBsZSBjcmF0ZXMuIFJ1bm5pbmcgdGhlIGZ1bGwgc3VpdGUgb24gZXZlcnkgY2hhbmdlCmlzIHNsb3csIHNvIGR1cmluZyBkZXZlbG9wbWVudCB0YXJnZXQganVzdCB0aGUgcGFja2FnZSB5b3UgYXJlIGVkaXRpbmcuIFRoZQpvcGVyYXRvciBjcmF0ZSBpcyBgc3RlbGxhci1vcGVyYXRvcmA7IHVzZSBgLXBgIChvciBgLS1wYWNrYWdlYCkgdG8gc2NvcGUgY2FyZ28KdG8gaXQ6CgpgYGBiYXNoCiMgUnVuIGFsbCB0ZXN0cyBmb3IgdGhlIG9wZXJhdG9yIGNyYXRlIG9ubHkKY2FyZ28gdGVzdCAtcCBzdGVsbGFyLW9wZXJhdG9yCgojIFJ1biBhIHNpbmdsZSB0ZXN0IG1vZHVsZSBvciBmdW5jdGlvbiB3aXRoaW4gdGhhdCBwYWNrYWdlCmNhcmdvIHRlc3QgLXAgc3RlbGxhci1vcGVyYXRvciByZWNvbmNpbGUKY2FyZ28gdGVzdCAtcCBzdGVsbGFyLW9wZXJhdG9yIHJlY29uY2lsZV9jcmVhdGVzX2RlcGxveW1lbnQKCiMgUnVuIGEgc3BlY2lmaWMgaW50ZWdyYXRpb24gc3VpdGUgaW4gdGhhdCBwYWNrYWdlCmNhcmdvIHRlc3QgLXAgc3RlbGxhci1vcGVyYXRvciAtLXRlc3QgZTJlX2tpbmQgLS0gLS1pZ25vcmVkIC0tbm9jYXB0dXJlCgojIENvbXBpbGUgdGhlIHBhY2thZ2UncyB0ZXN0cyB3aXRob3V0IHJ1bm5pbmcgdGhlbSAoZmFzdCBmZWVkYmFjaykKY2FyZ28gdGVzdCAtcCBzdGVsbGFyLW9wZXJhdG9yIC0tbm8tcnVuCgojIFNlZSB0aGUgZXhhY3QgcGFja2FnZSBuYW1lIGlmIHlvdSBhcmUgdW5zdXJlCmNhcmdvIG1ldGFkYXRhIC0tbm8tZGVwcyAtLWZvcm1hdC12ZXJzaW9uIDEgfCBncmVwICciIG5hbWUiJwpgYGAKClRvIGFsc28gcnVuIHRoZSBkb2N0ZXN0cyBmb3IgdGhhdCBwYWNrYWdlLCBhZGQgYC0tZG9jdGA7IHRbyBpbmNsdWRlIGFsbAp0YXJnZXRzIChsaWIsIGJpbnMsIHRlc3RzLCBiZW5jaGVzKSwgYWRkIGAtLWFsbC10YXJnZXRzYC4gVG8gcnVuIHRlc3RzIGZvciBhCmRpZmZlcmVudCB3b3Jrc3BhY2UgbWVtYmVyLCBzd2FwIHRoZSBwYWNrYWdlIG5hbWUsIGUuZy4gYGNhcmdvIHRlc3QgLXAgc3RlbGxhci1rOHNgLgoKLS0tCgojIyBNYWtlZmlsZSBzaG9ydGN1dHMKCmBtYWtlIGhlbHBgIHByaW50cyB0aGUgZnVsbCBsaXN0LiBUaGUgb25lcyB0aGF0IG1hdHRlciBkYXkgdG8gZGF5OgoKfCBUYXJnZXQgfCBXaGF0IGl0IGRvZXMgfAp8IC0tLSB8IC0tLSB8CnwgYG1ha2UgZGV2LXNldHVwYCB8IHJ1c3R1cCBzdGFibGUgKyBjbGlwcHkvcnVzdGZtdCwgYGNhcmdvLWF1ZGl0YCwgYGNhcmdvLXdhdGNoYCwgcHJlLWNvbW1pdCBob29rcyB8CnwgYG1ha2UgcXVpY2tzdGFydGAgfCBraW5kIGNsdXN0ZXIsIGltYWdlIGJ1aWxkIGFuZCBsb2FkLCBDUkQsIEhlbG0gaW5zdGFsbCwgc2FtcGxlIG5vZGUgfAp8IGBtYWtlIGJ1aWxkYCB8IGBjYXJnbyBidWlsZCAtLXJlbGVhc2UgLS1sb2NrZWRgIHwKfCBgbWFrZSB0ZXN0YCB8IHVuaXQsIGludGVncmF0aW9uIGFuZCBkb2MgdGVzdHMgd2l0aCB0aGUgc3RhbmRhcmQgZmVhdHVyZSBzZXQgfAp8IGBtYWtlIHJ1bi1kZXZgIHwgb3BlcmF0b3Igd2l0aCBob3QtcmVsb2FkIChgY2FyZ28gd2F0Y2hgKSB8CnwgYG1ha2UgcnVuLWxvY2FsYCB8IHJ1biB0aGUgcmVsZWFzZSBiaW5hcnkgb25jZSB8CnwgYG1ha2Ugd2F0Y2hgIHwgY29udGludW91cyBgY2hlY2tgICsgYHRlc3RgICsgYGJ1aWxkYCB8CnwgYG1ha2UgY29tcG9zZS1kZXZgIHwgY29udGFpbmVyaXNlZCBob3QtcmVsb2FkIHN0YWNrIHwKfCBgbWFrZSBpbnN0YWxsLWNyZGAgfCBhcHBseSBgY29uZmlnL2NyZC9zdGVsbGFybm9kZS1jcmQueWFtbGAgfAp8IGBtYWtlIGFwcGx5LXNhbXBsZXNgIHwgaW5zdGFsbCBDUkRzLCB0aGVuIGFwcGx5IGV2ZXJ5dGhpbmcgaW4gYGNvbmZpZy9zYW1wbGVzL2AgfAp8IGBtYWtlIGZtdGAgLyBgbWFrZSBsaW50YCB8IGBjYXJnbyBmbXQgLS1hbGxgIC8gY2xpcHB5IHwKfCBgbWFrZSBjaS1sb2NhbGAgfCB0aGUgZnVsbCBDSSBwaXBlbGluZSBsb2NhbGx5IHwKfCBgbWFrZSBkb2NrZXItYnVpbGRgIHwgbG9jYWwgaW1hZ2UgZnJvbSBob3N0LWJ1aWx0IGJpbmFyaWVzIHwKfCBgbWFrZSBoZWxtLWxpbnRgIHwgbGludCBgY2hhcnRzL3N0ZWxsYXItb3BlcmF0b3JgIHwKfCBgbWFrZSBjbGVhbmAgfCBgY2FyZ28gY2xlYW5gIHwKCi0tLQoKIyMgRGlhZ25vc3RpY3MKCiMjIyBUaGUgY2x1c3RlciBuZXZlciBiZWNvbWVzIHJlYWR5LCBvciBub2RlcyBnbyBgTm90UmVhZHlgCgpBbG1vc3QgYWx3YXlzIG1lbW9yeS4gQSBraW5kIG5vZGUgcGx1cyBhIFJ1c3QgYnVpbGQgZWFzaWx5IGV4Y2VlZHMgYSAyIEdCIERvY2tlcgpWTS4gQ2hlY2sgd2hhdCBEb2NrZXIgYWN0dWFsbHkgaGFzOgoKYGBgYmFzaApkb2NrZXIgaW5mbyAtLWZvcm1hdCAnd3t7Lk5DUFV9fSBDUFVzLCB7ey5NZW1Ub3RhbH19IGJ5dGVzJwpgYGAKClJhaXNlIGl0IGluIERvY2tlciBEZXNrdG9wIChTZXR0aW5ncyDihpIgUmVzb3VyY2VzKSBvciBpbiBgLndzbGNvbmZpZ2Agb24gV2luZG93cywKdGhlbiBga2luZCBkZWxldGUgY2x1c3RlciAtLW5hbWUgc3RlbGxhci1kZXZgIGFuZCByZS1ydW4gYG1ha2UgcXVpY2tzdGFydGAuCgojIyMgYHRvbyBtYW55IG9wZW4gZmlsZXNgIHdoZW4gY3JlYXRpbmcgdGhlIGNsdXN0ZXIKClRoZSBpbm90aWZ5IGxpbWl0cy4gQXBwbHkgdGhlIGBzeXNjdGxgIHNldHRpbmdzIGZyb20gdGhlIExpbnV4IHNldHVwIHNlY3Rpb24KYWJvdmU7IHRoZXkgYXBwbHkgdG8gV1NMMiBhcyB3ZWxsLgoKIyMjIFBvZHMgc3R1Y2sgaW4gYEltYWdlUHVsbEJhY2tPZmZgCgpUaGUgY2hhcnQgaXMgZGVwbG95ZWQgd2l0aCBgaW1hZ2UucHVsbFBvbGljeT1OZXZlcmAsIHNvIHRoZSBub2RlIG11c3QgYWxyZWFkeQpoYXZlIHRoZSBpbWFnZS4gQ29uZmlybSB0aGUgbG9hZCBzdGVwIGhhcHBlbmVkOgoKYGBgYmFzaApkb2NrZXIgZXhlYyAtaXQgc3RlbGxhci1kZXYtY29udHJvbC1wbGFuZSBjcmljdGwgaW1hZ2VzIHwgZ3JlcCBzdGVsbGFyLW9wZXJhdG9yCmtpbmQgbG9hZCBkb2NrZXItaW1hZ2Ugc3RlbGxhci1vcGVyYXRvcjpkZXYgLS1uYW1lIHN0ZWxsYXItZGV2CmBgYAoKUmVidWlsZCBhbmQgcmVsb2FkIGFmdGVyIGFueSBjb2RlIGNoYW5nZSDigJQgYGtpbmQgbG9hZGAgY29waWVzIHRoZSBpbWFnZSwgaXQgZG9lcwpub3QgdHJhY2sgaXQuCgojIyMgUG9kcyBldmljdGVkLCBvciBgbm8gc3BhY2UgbGVmdCBvbiBkZXZpY2VgCgpraW5kIHN0b3JlcyBldmVyeXRoaW5nIGluIHRoZSBEb2NrZXIgVk0ncyBkaXNrLiBSZWNsYWltIGl0OgoKYGBgYmFzaApkb2NrZXIgc3lzdGVtIGRmCmRvY2tlciBzeXN0ZW0gcHJ1bmUgLWEgLS12b2x1bWVzICAgIyByZW1vdmVzIHVudXNlZCBpbWFnZXMvdm9sdW1lcywgbm90IHlvdXIgY2x1c3RlcgpgYGAKCklmIHRoZSBvcGVyYXRvcidzIFBWQ3MgZmlsbCB0aGUgbm9kZSwgZGVsZXRlIHRoZSBzYW1wbGUgYW5kIHJlYXBwbHk6CmBrdWIKYGBgCg==
+# Local Development with kind
+
+This guide takes you from a clean machine to a running Stellar-K8s operator on a
+local [kind](https://kind.sigs.k8s.io/) cluster, with hot-reloading and
+integration tests. Target time on a machine that already has Docker: **under 15
+minutes**, most of it the first Rust build.
+
+If you would rather use k3d, see [k3d local development](../development.md).
+For the full reference on building, testing and contributing, see
+[DEVELOPMENT.md](../../DEVELOPMENT.md).
+
+---
+
+## Contents
+
+- [Pinned versions](#pinned-versions)
+- [Platform setup](#platform-setup)
+- [The 15-minute path](#the-15-minute-path)
+- [Hot-reloading the operator](#hot-reloading-the-operator)
+- [Integration tests against kind](#integration-tests-against-kind)
+- [Running tests for a single package](#running-tests-for-a-single-package)
+- [Makefile shortcuts](#makefile-shortcuts)
+- [Diagnostics](#diagnostics)
+- [Teardown](#teardown)
+
+---
+
+## Pinned versions
+
+Use these versions. They are the ones this repository actually builds and tests
+against; anything older is untested.
+
+| Tool | Version | Where it comes from |
+| --- | --- | --- |
+| Rust | stable **1.92+** (minimum 1.88) | `README.md` and `CONTRIBUTING.md` state 1.88+; the CI MSRV job pins `1.92` (`.github/workflows/ci.yml`) |
+| Docker | **24.0+** with BuildKit enabled, Compose v2 | `make quickstart` builds with `DOCKER_BUILDKIT=1`; `docker-compose.dev.yml` is a Compose overlay |
+| kind | **0.20.0+** | `DEVELOPMENT.md` install snippet; CI provisions clusters with `helm/kind-action@v1.14.0` |
+| kubectl | **1.30.x** | the operator compiles against `k8s-openapi` feature `v1_30` (`Cargo.toml`), so match the cluster's minor version |
+| Helm | **3.14.0** | pinned in CI via `azure/setup-helm@v4` (`.github/workflows/ci.yml`) |
+
+> **Note on Rust versions.** The repository currently names four different Rust
+> versions: 1.88 in `README.md`/`CONTRIBUTING.md`, 1.92 in the CI MSRV job,
+> 1.93 in the `cargo-chef` base image in `Dockerfile`, and 1.94 in
+> `Dockerfile.dev`. Local development on stable 1.92 or newer satisfies all of
+> them. Consolidating those into a single `rust-version` field in `Cargo.toml`
+> would be a good follow-up.
+
+Verify everything at once before you start:
+
+```bash
+rustc --version   # 1.92.0 or newer
+docker --version  # 24.x or newer
+docker ps         # must succeed: the daemon has to be running
+kind version      # 0.20.0 or newer
+kubectl version --client
+helm version --short  # v3.14.x
+```
+
+---
+
+## Platform setup
+
+### Linux
+
+```bash
+# Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source "$HOME/.cargo/env"
+
+# Docker Engine — follow https://docs.docker.com/engine/install/ for your distro,
+# then allow non-root use so `docker ps` works without sudo:
+sudo usermod -aG docker "$USER"   # log out and back in afterwards
+
+# kind
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.20.0/kind-linux-amd64
+chmod +x ./kind && sudo mv ./kind /usr/local/bin/kind
+
+# kubectl (pick the 1.30 line to match the operator's k8s-openapi features)
+curl -LO "https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl"
+chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+
+# Helm
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+> **Troubleshooting Docker socket permissions.** If `docker ps` or `kind` fails
+> with `permission denied while trying to connect to the Docker daemon socket at
+> unix:///var/run/docker.sock`, your shell has not picked up the `docker` group
+> yet. Run `sudo usermod -aG docker "$USER"` followed by `newgrp docker` (or log
+> out and back in) — see [Diagnostics](#docker-socket-permission-denied) below.
+
+Raise the inotify limits before running `kind` or `cargo watch`. Both consume
+watches aggressively, and the default limits on most distributions are low
+enough that clusters fail to start with cryptic errors:
+
+```bash
+sudo sysctl fs.inotify.max_user_watches=524288
+sudo sysctl fs.inotify.max_user_instances=512
+# Persist across reboots:
+echo -e "fs.inotify.max_user_watches=524288\nfs.inotify.max_user_instances=512" \
+  | sudo tee /etc/sysctl.d/99-kind.conf
+```
+
+### macOS
+
+```bash
+brew install rustup-init && rustup-init   # or the curl installer above
+brew install kind kubectl helm
+brew install --cask docker                # Docker Desktop
+```
+
+Start Docker Desktop and give it enough headroom before creating a cluster:
+**Settings → Resources → at least 4 CPUs, 8 GB memory, 40 GB disk**. The
+defaults (2 CPU / 2 GB on older installs) are not enough to build the operator
+and run a kind cluster at the same time.
+
+Apple Silicon: everything below works natively on arm64. The images the
+operator builds are single-arch by default; use `make docker-multiarch` only
+when you need to push a cross-platform image.
+
+### Windows (WSL2)
+
+Do all development **inside** the WSL2 filesystem. Working out of `/mnt/c`
+makes Rust builds several times slower and breaks file-change events, so
+hot-reloading will silently not fire.
+
+1. Install WSL2 and a distro (PowerShell as Administrator):
+   ```powershell
+   wsl --install -d Ubuntu-22.04
+   ```
+2. Install Docker Desktop, then enable **Settings → Resources → WSL Integration**
+   for your distro. `docker ps` must succeed from inside WSL.
+3. Clone into the Linux filesystem, e.g. `~/src/stellar-k8s`, **not** `/mnt/c/...`.
+4. Follow the Linux steps above for Rust, kind, kubectl and Helm.
+5. Cap WSL2's memory so a kind cluster plus a Rust build does not exhaust the
+   host. Create `C:\Users\<you>\.wslconfig`:
+   ```ini
+   [wsl2]
+   memory=8GB
+   processors=4
+   swap=2GB
+   ```
+   Then `wsl --shutdown` from PowerShell and reopen your shell.
+
+---
+
+## The 15-minute path
+
+From a clean clone:
+
+```bash
+git clone https://github.com/agnesnaomiolim-cloud/Stellar-K8s.git
+cd Stellar-K8s
+
+# 1. Toolchain: rustup components, cargo-audit, cargo-watch, pre-commit hooks
+make dev-setup
+
+# 2. Everything else: kind cluster, operator image, CRD, Helm release, sample node
+make quickstart
+```
+
+`make quickstart` is the whole local environment in one target. It:
+
+1. checks that `kind`, `kubectl` and `helm` are on `PATH` and fails early if not;
+2. creates the kind cluster **`stellar-dev`** (reuses it if it already exists);
+3. runs `make build` (`cargo build --release --locked`);
+4. builds the `stellar-operator:dev` image from the `runtime-local` stage of
+   `Dockerfile`, which copies the host-built binaries rather than rebuilding
+   them in the container;
+5. `kind load docker-image` to push that image into the cluster;
+6. applies `config/crd/stellarnode-crd.yaml`;
+7. creates the `stellar-system` namespace;
+8. `helm upgrade --install` from `charts/stellar-operator` with
+   `image.tag=dev` and `image.pullPolicy=Never`;
+9. applies `config/samples/test-stellarnode.yaml`.
+
+Verify:
+
+```bash
+kubectl get stellarnode -n stellar-system -w
+kubectl get deploy,sts,svc,pvc -n stellar-system
+kubectl logs -n stellar-system deploy/stellar-operator -f
+```
+
+**Where the time goes.** Steps 1–2 and 5–9 take roughly two minutes. Step 3 is
+the cold Rust release build, which dominates: expect 8–12 minutes on four cores
+the first time and well under a minute afterwards, since the build cache is
+reused. If you want to overlap the wait, run `make build` first in one shell and
+`make quickstart` after it finishes.
+
+---
+
+## Hot-reloading the operator
+
+Two workflows, depending on whether you want the operator on the host or in a
+container.
+
+### Host process against the kind cluster (fastest inner loop)
+
+```bash
+make run-dev   # RUST_LOG=debug cargo watch -x run
+```
+
+`cargo watch` rebuilds and restarts the operator on every save. It talks to
+whatever cluster your current kubeconfig context points at, so make sure that is
+the kind cluster:
+
+```bash
+kubectl config use-context kind-stellar-dev
+```
+
+Scale the in-cluster operator to zero first, or the two will fight over the same
+resources:
+
+```bash
+kubectl scale deploy/stellar-operator -n stellar-system --replicas=0
+```
+
+Related targets: `make run-local` runs the release binary once without
+watching, and `make watch` runs `cargo watch -x check -x test -x build` when you
+want continuous checking rather than a running operator.
+
+### Containerised hot-reload
+
+```bash
+make compose-dev   # docker-compose.yml + docker-compose.dev.yml
+```
+
+This runs the operator from `Dockerfile.dev` with `cargo watch` inside the
+container, mounting the source tree at `/app` with persistent cargo and target
+caches, `RUST_LOG=debug,stellar_k8s=trace`, and `--dry-run` enabled. Use it when
+you want an environment closer to CI. `make compose-logs` tails it and
+`make compose-down` stops it.
+
+> On WSL2 and macOS, in-container file watching only works reliably when the
+> source tree lives in the Linux/VM filesystem. See the platform notes above.
+
+---
+
+## Integration tests against kind
+
+Unit and doc tests need no cluster:
+
+```bash
+make test
+```
+
+The kind end-to-end suite is `#[ignore]`d by default so it never runs in a
+normal `cargo test`. Run it explicitly against a live cluster:
+
+```bash
+cargo test --test e2e_kind -- --ignored --nocapture
+```
+
+The harness creates or reuses a cluster named **`stellar-e2e`**, which is
+deliberately *not* the `stellar-dev` cluster `make quickstart` builds, so a test
+run cannot destroy your development environment. Point it at another cluster
+with:
+
+```bash
+KIND_CLUSTER_NAME=stellar-dev cargo test --test e2e_kind -- --ignored
+```
+
+The suite installs CRDs from `config/crd/`, applies sample `StellarNode`
+manifests, and waits for the operator to reconcile Deployments and Services
+across the `stellar-e2e`, `stellar-e2e-horizon` and `stellar-e2e-upgrade`
+namespaces. It skips itself when `kind`/`kubectl` are missing rather than
+failing, so a green run with no output means the tools were not found — check
+that both are on `PATH`.
+
+Other suites in `tests/` (chaos, DR failover, leader election, secret rotation,
+service mesh) follow the same `--ignored` convention where they need a cluster.
+
+Before opening a PR, run what CI runs:
+
+```bash
+make ci-local   # fmt-check + lint + audit + test + build
+```
+
+---
+
+## Running tests for a single package
+
+This workspace contains multiple crates. Running the full suite on every change
+is slow, so during development target just the package you are editing. The
+operator crate is `stellar-operator`; use `-p` (or `--package`) to scope cargo
+to it:
+
+```bash
+# Run all tests for the operator crate only
+cargo test -p stellar-operator
+
+# Run a single test module or function within that package
+cargo test -p stellar-operator reconcile
+cargo test -p stellar-operator reconcile_creates_deployment
+
+# Run a specific integration suite in that package
+cargo test -p stellar-operator --test e2e_kind -- --ignored --nocapture
+
+# Compile the package's tests without running them (fast feedback)
+cargo test -p stellar-operator --no-run
+
+# See the exact package name if you are unsure
+cargo metadata --no-deps --format-version 1 | grep '" name"'
+```
+
+To also run the doctests for that package, add `--doc`.
+
+---
+
+## Makefile shortcuts
+
+`make help` prints the full list. The ones that matter day to day:
+
+| Target | What it does |
+| --- | --- |
+| `make dev-setup` | rustup stable + clippy/rustfmt, `cargo-audit`, `cargo-watch`, pre-commit hooks |
+| `make quickstart` | kind cluster, image build and load, CRD, Helm install, sample node |
+| `make build` | `cargo build --release --locked` |
+| `make test` | unit, integration and doc tests with the standard feature set |
+| `make run-dev` | operator with hot-reload (`cargo watch`) |
+| `make run-local` | run the release binary once |
+| `make watch` | continuous `check` + `test` + `build` |
+| `make compose-dev` | containerised hot-reload stack |
+| `make install-crd` | apply `config/crd/stellarnode-crd.yaml` |
+| `make apply-samples` | install CRDs, then apply everything in `config/samples/` |
+| `make fmt` / `make lint` | `cargo fmt --all` / clippy |
+| `make ci-local` | the full CI pipeline locally |
+| `make docker-build` | local image from host-built binaries |
+| `make helm-lint` | lint `charts/stellar-operator` |
+| `make clean` | `cargo clean` |
+
+---
+
+## Diagnostics
+
+### Docker socket `permission denied`
+
+If `docker ps`, `kind create cluster`, or `make quickstart` fails with:
+
+```text
+permission denied while trying to connect to the Docker daemon socket at unix:///var/run/docker.sock
+```
+
+your user is not in the `docker` group (or your current login session predates
+the group change). Add your user to the `docker` group and reload group
+membership:
+
+```bash
+sudo groupadd -f docker
+sudo usermod -aG docker "$USER"
+newgrp docker   # activate in the current shell, or log out and back in
+docker ps       # confirm non-root access works
+```
+
+> **Security note.** Membership in the `docker` group grants privileges
+> equivalent to `root` on the host. Only add trusted local development accounts.
+
+### The cluster never becomes ready, or nodes go `NotReady`
+
+Almost always memory. A kind node plus a Rust build easily exceeds a 2 GB Docker
+VM. Check what Docker actually has:
+
+```bash
+docker info --format '{{.NCPU}} CPUs, {{.MemTotal}} bytes'
+```
+
+Raise it in Docker Desktop (Settings → Resources) or in `.wslconfig` on Windows,
+then `kind delete cluster --name stellar-dev` and re-run `make quickstart`.
+
+### `too many open files` when creating the cluster
+
+The inotify limits. Apply the `sysctl` settings from the Linux setup section
+above; they apply to WSL2 as well.
+
+### Pods stuck in `ImagePullBackOff`
+
+The chart is deployed with `image.pullPolicy=Never`, so the node must already
+have the image. Confirm the load step happened:
+
+```bash
+docker exec -it stellar-dev-control-plane crictl images | grep stellar-operator
+kind load docker-image stellar-operator:dev --name stellar-dev
+```
+
+Rebuild and reload after any code change — `kind load` copies the image, it does
+not track it.
+
+### Pods evicted, or `no space left on device`
+
+kind stores everything in the Docker VM's disk. Reclaim it:
+
+```bash
+docker system df
+docker system prune -a --volumes   # removes unused images/volumes, not your cluster
+```
+
+If the operator's PVCs fill the node, delete the sample and reapply:
+`kubectl delete -f config/samples/test-stellarnode.yaml`.
+
+### `cargo watch` does not rebuild on save
+
+Either the inotify limits above, or the source tree is on a mounted Windows/host
+filesystem where change events are not delivered. Move the clone into the Linux
+filesystem (WSL2) and retry.
+
+### The operator reconciles nothing
+
+Check that only one operator is running. If you started `make run-dev` while the
+in-cluster deployment is still up, both are watching the same resources:
+
+```bash
+kubectl get deploy/stellar-operator -n stellar-system   # scale to 0 for host-side dev
+```
+
+Also confirm the CRD is installed (`kubectl get crd | grep stellarnode`) and
+your kubeconfig context is `kind-stellar-dev`.
+
+### Helm release fails to become ready within the timeout
+
+`make quickstart` waits 120 s. On a slow first run the image load and pod start
+can exceed that. The release is still installing — watch it, then re-run
+`make quickstart`, which is idempotent:
+
+```bash
+kubectl get pods -n stellar-system -w
+```
+
+---
+
+## Teardown
+
+```bash
+kind delete cluster --name stellar-dev   # development cluster
+kind delete cluster --name stellar-e2e   # e2e test cluster, if created
+make clean                               # cargo artifacts
+docker rmi stellar-operator:dev
+```
