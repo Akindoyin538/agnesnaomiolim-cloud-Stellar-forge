@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.23.0 (2026-10-22) [minor]
+
+• Merge pull request #604 from Sirbeejay16/chore/remove-unused-imports-reconciler
+• Chore/remove unused imports reconciler
+• Merge branch 'main' into chore/remove-unused-imports-reconciler
+• Merge pull request #605 from Sycosmile/docs/544-token-vault-mint-docs
+📝 docs(token-vault): document mint entrypoint parameters (#544)
+• Merge pull request #606 from Sycosmile/test/549-mint-max-supply
+📝 test(token-vault): add mint max-supply boundary tests (#549)
+• Merge branch 'main' into test/549-mint-max-supply
+• Merge pull request #607 from Simbabi/fix/537-insufficient-balance
+🐛 fix(token-vault): report insufficient balance errors (depends on #582)
+• Merge branch 'main' into fix/537-insufficient-balance
+• Merge pull request #608 from Goodnessukaigwe/fix/469-automated-pvc-snapshotting-before-operator-version-upgrades
+• [469] [Backend] Automated PVC Snapshotting Before Operator Version Upgrades
+• Merge branch 'main' into fix/469-automated-pvc-snapshotting-before-operator-version-upgrades
+📝 ci: call preflight script directly
+📝 ci: fix royalty splitter cache key format
+• Merge branch 'main' into test/549-mint-max-supply
+• Merge branch 'main' into docs/544-token-vault-mint-docs
+• Gate validator version upgrades on CSI VolumeSnapshot readiness.
+• Pause the StatefulSet rollout until the pre-upgrade snapshot is ReadyToUse, then resume; halt and emit events when CSI is unavailable or times out.
+• Co-authored-by: Cursor <cursoragent@cursor.com>
+🐛 fix(token-vault): report insufficient balance errors
+• Signed-off-by: Simbabi <169989636+Simbabi@users.noreply.github.com>
+📝 test(token-vault): add mint max-supply boundary tests (#549)
+• Cover the inclusive supply cap and the overflow guard in TokenVault::mint:
+• minting exactly MAX_SUPPLY succeeds (with a zero-amount mint staying a
+• no-op at the cap), while minting one token past it reverts on the
+• checked-add boundary with "supply overflow" before any state is written.
+• Validated with cargo test (9 passed, 0 failed).
+📝 docs(token-vault): document mint entrypoint parameters (#544)
+• Expand TokenVault::mint's rustdoc so the public entrypoint is fully
+• self-describing: each parameter explained (env, to, and amount in base
+• units with its sign and supply/balance accounting), the admin/pause
+• authorization model, every panic condition, and the emitted mint event.
+• Validated with cargo doc --no-deps (clean) and cargo test (7 passed).
+✨ feat(contracts): add token-vault contract baseline (#544)
+• Issue #544 targets contracts/token-vault/src/lib.rs, which does not exist
+• on main yet. Introduce the SEP-41 TokenVault contract (same baseline as
+• open PRs #582/#586): initialize, admin-gated mint/burn, transfer and
+• allowance with expiration, pause control, and unit tests, so the mint
+• entrypoint requested by #544 has a home to document.
+• DCO sign-off required by this repo
+• docs(getting-started)
+📝 test(contract): add unit test for token vault zero-amount transfer (#526)
+• Signed-off-by: Babigdk <babigdk@users.noreply.github.com>
+
+
 ## Chart v2.22.0 (2026-10-22) [minor]
 
 • Merge pull request #609 from Goodnessukaigwe/fix/470-ebpf-based-low-overhead-network-telemetry-collector
