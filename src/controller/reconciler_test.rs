@@ -12,8 +12,8 @@ mod tests {
     use super::super::reconciler::*;
     use crate::controller::{AuditLog, JobRegistry};
     use crate::crd::{
-        BackupConfig, CaptiveCoreConfig, Condition, HorizonConfig, ManagedDatabaseConfig,
-        NodeType, ResourceRequirements, ResourceSpec, SorobanConfig, StellarNetwork, StellarNode,
+        BackupConfig, CaptiveCoreConfig, Condition, HorizonConfig, ManagedDatabaseConfig, NodeType,
+        ResourceRequirements, ResourceSpec, SorobanConfig, StellarNetwork, StellarNode,
         StellarNodeSpec, StorageConfig, ValidatorConfig,
     };
     use crate::error::Error;
@@ -558,12 +558,52 @@ VALIDATORS=["VALIDATOR1", "VALIDATOR2"]"#
     }
 
     #[test]
+    #[test]
+    fn test_upgrade_safety_is_validator_only() {
+        let mut validator = create_test_validator_node("test-validator", "default");
+        validator.spec.upgrade_safety = Some(crate::crd::UpgradeSafetyConfig {
+            enabled: true,
+            volume_snapshot_class_name: Some("csi-fast".to_string()),
+            flush_before_snapshot: true,
+            ready_timeout_seconds: 90,
+            encryption_key_ref: None,
+            halt_on_csi_unavailable: true,
+        });
+        assert!(validator.spec.validate().is_ok());
+
+        let mut horizon = create_test_horizon_node("test-horizon", "default");
+        horizon.spec.upgrade_safety = Some(crate::crd::UpgradeSafetyConfig {
+            enabled: true,
+            ..Default::default()
+        });
+        assert!(horizon.spec.validate().is_err());
+    }
+
+    #[test]
     fn test_pre_upgrade_snapshot_name_is_sanitized() {
         let node = create_test_validator_node("validator-a", "default");
         let snapshot_name = build_pre_upgrade_snapshot_name(&node, "v22.0.1+build.5");
 
         assert!(snapshot_name.starts_with("validator-a-upgrade-v22-0-1-build-5-"));
         assert!(snapshot_name.len() <= 253);
+    }
+
+    #[test]
+    fn test_extract_recent_health_or_err_returns_health_when_present() {
+        let expected = crate::controller::health::HealthCheckResult::synced(Some(42));
+        let res = extract_recent_health_or_err(Some(expected), "default", "validator-a");
+        assert!(res.is_ok());
+        if let Ok(health) = res {
+            assert!(health.healthy);
+            assert!(health.synced);
+            assert_eq!(health.ledger_sequence, Some(42));
+        }
+    }
+
+    #[test]
+    fn test_extract_recent_health_or_err_propagates_error_when_missing() {
+        let res = extract_recent_health_or_err(None, "default", "validator-a");
+        assert!(matches!(res, Err(Error::ConfigError(_))));
     }
 
     /// Test that suspended nodes have 0 replicas

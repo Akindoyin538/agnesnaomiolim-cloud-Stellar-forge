@@ -4,10 +4,6 @@ pub mod error;
 #[cfg(test)]
 mod test;
 
-use error::Error;
-use soroban_sdk::{
-    contract, contractimpl, contracttype, panic_with_error, symbol_short, Address, Env, String,
-};
 
 pub const DEFAULT_MAX_GAS_LIMIT: u64 = 50_000_000;
 pub const MAX_SUPPLY: i128 = i128::MAX;
@@ -72,6 +68,7 @@ fn ensure_not_paused(env: &Env) {
     assert!(!paused, "contract is paused");
 }
 
+
 #[contractimpl]
 impl TokenVault {
     /// Initializes the token vault with administrative control and metadata.
@@ -120,6 +117,7 @@ impl TokenVault {
         env.storage().instance().set(&DataKey::Paused, &paused);
     }
 
+
     /// Mints new tokens to a designated recipient address.
     ///
     /// # Arguments
@@ -128,7 +126,7 @@ impl TokenVault {
     /// * `amount` - Amount of tokens to mint (must be non-negative).
     pub fn mint(env: Env, to: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
+
         let admin: Address = env
             .storage()
             .instance()
@@ -207,13 +205,7 @@ impl TokenVault {
     /// leaving balances unchanged and emitting a transfer event.
     pub fn transfer(env: Env, from: Address, to: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
-        from.require_auth();
 
-        let from_balance = balance(&env, &from);
-        if from_balance < amount {
-            panic_with_error!(&env, Error::InsufficientBalance);
-        }
 
         set_balance(&env, &from, from_balance - amount);
         set_balance(
@@ -229,7 +221,7 @@ impl TokenVault {
 
     pub fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
+
         spender.require_auth();
         let data = allowance(&env, &from, &spender);
         assert!(
@@ -245,9 +237,7 @@ impl TokenVault {
             },
         );
         let from_balance = balance(&env, &from);
-        if from_balance < amount {
-            panic_with_error!(&env, Error::InsufficientBalance);
-        }
+
         set_balance(&env, &from, from_balance - amount);
         set_balance(
             &env,
@@ -262,12 +252,7 @@ impl TokenVault {
 
     pub fn burn(env: Env, from: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
-        from.require_auth();
-        let current = balance(&env, &from);
-        if current < amount {
-            panic_with_error!(&env, Error::InsufficientBalance);
-        }
+
         set_balance(&env, &from, current - amount);
         let supply: i128 = env
             .storage()
