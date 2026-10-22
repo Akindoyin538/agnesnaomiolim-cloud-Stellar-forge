@@ -9,6 +9,7 @@ Soroban smart contract implementing a standard token vault with administrative c
 - **Minting/Burning**: Relayer/admin-authorized supply expansion and token burning.
 
 ## Testing
+
 Run unit tests within this directory:
 ```bash
 cargo test
