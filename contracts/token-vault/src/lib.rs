@@ -4,9 +4,7 @@ pub mod error;
 #[cfg(test)]
 mod test;
 
-use soroban_sdk::{contract, contractimpl, contracttype, symbol_short, Address, Env, String};
 
-/// Standardized default maximum gas limit enforced by contract execution guards.
 pub const DEFAULT_MAX_GAS_LIMIT: u64 = 50_000_000;
 pub const MAX_SUPPLY: i128 = i128::MAX;
 
@@ -70,19 +68,6 @@ fn ensure_not_paused(env: &Env) {
     assert!(!paused, "contract is paused");
 }
 
-/// Execution guard verifying that a requested gas limit does not exceed `DEFAULT_MAX_GAS_LIMIT`.
-pub fn ensure_gas_limit(gas_limit: u64) {
-    assert!(
-        gas_limit <= DEFAULT_MAX_GAS_LIMIT,
-        "gas limit exceeds default max limit"
-    );
-}
-
-/// Execution guard standardizing contract execution boundaries and checking pause status.
-fn ensure_execution_guard(env: &Env) {
-    ensure_not_paused(env);
-    ensure_gas_limit(DEFAULT_MAX_GAS_LIMIT);
-}
 
 #[contractimpl]
 impl TokenVault {
@@ -132,62 +117,7 @@ impl TokenVault {
         env.storage().instance().set(&DataKey::Paused, &paused);
     }
 
-    /// Mints new tokens and credits them to a recipient address.
-    ///
-    /// Minting is the only operation that expands total supply, so it is gated
-    /// by the admin registered in [`TokenVault::initialize`] via
-    /// `admin.require_auth()` and is rejected while the vault is paused.
-    ///
-    /// # Arguments
-    ///
-    /// * `env` - The Soroban execution environment. Supplies the admin,
-    ///   pause flag and current total supply (instance storage), the
-    ///   recipient's balance (persistent storage), and the event sink used to
-    ///   emit the `mint` event.
-    /// * `to` - Address that receives the newly minted tokens. Its balance is
-    ///   credited by `amount`, initializing the entry to `0` first when the
-    ///   account has never held tokens. `to` does not need to authorize the
-    ///   call; minting to an arbitrary address is a deliberate admin action.
-    /// * `amount` - Quantity of tokens to mint, in the token's smallest unit
-    ///   (base units, i.e. whole multiples of 10^-`decimals` as configured in
-    ///   [`TokenVault::initialize`]). Must be non-negative. The same value is
-    ///   added to both `to`'s balance and the global total supply; `0` is
-    ///   accepted and acts as a balance no-op that still emits an event.
-    ///
-    /// # Panics
-    ///
-    /// Panics without applying any state change when:
-    ///
-    /// * `amount` is negative (`"amount must not be negative"`),
-    /// * the vault is paused (`"contract is paused"`),
-    /// * the vault was never initialized (`"not initialized"`),
-    /// * the admin did not authorize the invocation (authorization failure
-    ///   from `require_auth`),
-    /// * `total_supply + amount` overflows `i128` (`"supply overflow"`) or
-    ///   exceeds [`MAX_SUPPLY`] (`"exceeds max supply"`), or
-    /// * `to`'s resulting balance overflows `i128` (`"balance overflow"`).
-    ///
-    /// # Events
-    ///
-    /// Publishes an event with topic `(symbol_short!("mint"), to)` and data
-    /// `amount`, allowing indexers to track supply expansion per recipient.
-    pub fn mint(env: Env, to: Address, amount: i128) {
-        require_amount(amount);
-        ensure_not_paused(&env);
-    /// Returns the default maximum gas limit standardized across smart contract execution guards.
-    pub fn max_gas_limit(_env: Env) -> u64 {
-        DEFAULT_MAX_GAS_LIMIT
-    }
 
-    /// Execution guard validating whether a proposed gas limit is within default execution boundaries.
-    pub fn verify_gas_limit(_env: Env, gas_limit: u64) -> bool {
-        gas_limit <= DEFAULT_MAX_GAS_LIMIT
-    }
-
-    /// Execution guard asserting that the gas limit does not exceed standard boundaries.
-    pub fn check_gas_limit(_env: Env, gas_limit: u64) {
-        ensure_gas_limit(gas_limit);
-    }
 
     /// Mints new tokens to a designated recipient address.
     ///
@@ -197,7 +127,7 @@ impl TokenVault {
     /// * `amount` - Amount of tokens to mint (must be non-negative).
     pub fn mint(env: Env, to: Address, amount: i128) {
         require_amount(amount);
-        ensure_execution_guard(&env);
+
         let admin: Address = env
             .storage()
             .instance()
@@ -276,12 +206,7 @@ impl TokenVault {
     /// leaving balances unchanged and emitting a transfer event.
     pub fn transfer(env: Env, from: Address, to: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
-        ensure_execution_guard(&env);
-        from.require_auth();
 
-        let from_balance = balance(&env, &from);
-        assert!(from_balance >= amount, "insufficient balance");
 
         set_balance(&env, &from, from_balance - amount);
         set_balance(
@@ -297,8 +222,7 @@ impl TokenVault {
 
     pub fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
-        ensure_execution_guard(&env);
+
         spender.require_auth();
         let data = allowance(&env, &from, &spender);
         assert!(
@@ -314,7 +238,7 @@ impl TokenVault {
             },
         );
         let from_balance = balance(&env, &from);
-        assert!(from_balance >= amount, "insufficient balance");
+
         set_balance(&env, &from, from_balance - amount);
         set_balance(
             &env,
@@ -329,11 +253,7 @@ impl TokenVault {
 
     pub fn burn(env: Env, from: Address, amount: i128) {
         require_amount(amount);
-        ensure_not_paused(&env);
-        ensure_execution_guard(&env);
-        from.require_auth();
-        let current = balance(&env, &from);
-        assert!(current >= amount, "insufficient balance");
+
         set_balance(&env, &from, current - amount);
         let supply: i128 = env
             .storage()
