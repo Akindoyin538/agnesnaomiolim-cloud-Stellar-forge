@@ -9,6 +9,7 @@
 //!
 //! # Modules
 //!
+//! - [`apis`] — Custom resource validation and API schema utilities.
 //! - [`deployment`] — StellarNode deployment pipeline, including the
 //!   [`deployment::optimizer`] WASM bytecode optimizer.
 //! - [`quorum`] — Quorum-set graph analysis utilities.
@@ -19,6 +20,7 @@
 //!   reconciliation loop via a bounded ring buffer with configurable
 //!   backpressure and a parallel producer-consumer worker pool.
 
+pub mod apis;
 pub mod deployment;
 pub mod ingestion;
 pub mod quorum;
