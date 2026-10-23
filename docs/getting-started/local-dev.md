@@ -18,6 +18,7 @@ For the full reference on building, testing and contributing, see
 - [The 15-minute path](#the-15-minute-path)
 - [Hot-reloading the operator](#hot-reloading-the-operator)
 - [Integration tests against kind](#integration-tests-against-kind)
+- [Running tests for a single package](#running-tests-for-a-single-package)
 - [Makefile shortcuts](#makefile-shortcuts)
 - [Diagnostics](#diagnostics)
 - [Teardown](#teardown)
@@ -275,6 +276,35 @@ Before opening a PR, run what CI runs:
 ```bash
 make ci-local   # fmt-check + lint + audit + test + build
 ```
+
+---
+
+## Running tests for a single package
+
+This workspace contains multiple crates. Running the full suite on every change
+is slow, so during development target just the package you are editing. The
+operator crate is `stellar-operator`; use `-p` (or `--package`) to scope cargo
+to it:
+
+```bash
+# Run all tests for the operator crate only
+cargo test -p stellar-operator
+
+# Run a single test module or function within that package
+cargo test -p stellar-operator reconcile
+cargo test -p stellar-operator reconcile_creates_deployment
+
+# Run a specific integration suite in that package
+cargo test -p stellar-operator --test e2e_kind -- --ignored --nocapture
+
+# Compile the package's tests without running them (fast feedback)
+cargo test -p stellar-operator --no-run
+
+# See the exact package name if you are unsure
+cargo metadata --no-deps --format-version 1 | grep '" name"'
+```
+
+To also run the doctests for that package, add `--doc`.
 
 ---
 
