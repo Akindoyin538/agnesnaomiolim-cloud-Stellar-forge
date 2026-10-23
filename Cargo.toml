@@ -278,7 +278,4 @@ name = "crdgen"
 path = "src/bin/crdgen.rs"
 
 [workspace]
-# `telemetry` is a standalone workspace (see telemetry/Cargo.toml) consumed as a
-# path dependency; a nested workspace root cannot also be a member.
-members = ["wasm-plugins", "security/p2p-firewall"]
-exclude = ["telemetry"]
+
