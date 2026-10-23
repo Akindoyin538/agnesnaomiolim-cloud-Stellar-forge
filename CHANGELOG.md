@@ -5,6 +5,167 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.25.0 (2026-10-23) [minor]
+
+• Merge pull request #585 from ritchiejhay/feat/issue-475-contract-decentralized-options-amm-liquidity
+✨ feat: add decentralized options AMM liquidity pool contract
+• Merge branch 'main' into feat/issue-475-contract-decentralized-options-amm-liquidity
+• Merge pull request #586 from Dgbangba/test/allowance-exhaustion-reversion
+📝 test(token-vault): cover allowance exhaustion reversion
+• Merge branch 'main' into test/allowance-exhaustion-reversion
+• Merge pull request #587 from Daluworks/fix/issue-navbar-brand-logo-paths
+🐛 fix(frontend): resolve broken brand logo path and SVG illustration fallbacks in Navbar
+• Merge branch 'main' into fix/issue-navbar-brand-logo-paths
+• Merge pull request #588 from Dgbangba/docs/547-governance-maintainers
+• Docs/547 governance maintainers
+• Merge branch 'main' into docs/547-governance-maintainers
+• Merge pull request #589 from omoniyiadebayo12goal-crypto/feat/issue-524-frontend-add-missing-alt-text-to-dashboard
+🐛 fix: add descriptive alt text to dashboard status icons
+• Merge branch 'main' into feat/issue-524-frontend-add-missing-alt-text-to-dashboard
+• Merge pull request #590 from BIGdigii/feat/issue-538-backend-add-default-trait-implementation-for
+✨ feat(controller): implement Default for Reconciler config structs
+• Merge branch 'main' into feat/issue-538-backend-add-default-trait-implementation-for
+• Merge pull request #591 from Wiseman52/fix/issue-540-frontend-fix-hover-state-color-contrast-on
+🐛 fix: improve hover state color contrast on navbar links
+• Merge branch 'main' into fix/issue-540-frontend-fix-hover-state-color-contrast-on
+• Merge pull request #592 from AmazingZacch/fix/issue-527-frontend-standardize-button-padding-in-manifest
+🐛 fix: standardize button padding in manifest generator modal
+• Merge branch 'main' into fix/issue-527-frontend-standardize-button-padding-in-manifest
+• Merge pull request #593 from rajesetavie-maker/fix/issue-534-docs-fix-formatting-in-architecture-markdown
+📝 docs: fix markdown table formatting in multi-cluster architecture doc
+• Merge branch 'main' into fix/issue-534-docs-fix-formatting-in-architecture-markdown
+• Merge pull request #594 from Wiseman52/fix/issue-559-docs-add-quick-note-on-running-cargo-test-with
+📝 docs: add cargo test package flag examples to local dev guide
+• Merge branch 'main' into fix/issue-559-docs-add-quick-note-on-running-cargo-test-with
+• Merge pull request #595 from odunfemisamuel-maker/feat/issue-229-react-window
+• Feat/issue 229 react window
+• Merge branch 'main' into feat/issue-229-react-window
+• Merge pull request #596 from Wiseman52/fix/issue-555-backend-optimize-vector-allocation-in-telemetry
+🐛 perf: pre-allocate vector capacity in telemetry log formatter
+• Merge branch 'main' into fix/issue-555-backend-optimize-vector-allocation-in-telemetry
+• Merge pull request #597 from AmazingZacch/fix/issue-528-docs-add-code-comment-example-to-crd-spec
+📝 docs: add commented resource limit examples to CRD sample
+• Merge branch 'main' into fix/issue-528-docs-add-code-comment-example-to-crd-spec
+• Merge pull request #598 from Dgbangba/test/crd-validation-helper
+📝 test(controller): add CRD name validation unit tests
+• Merge pull request #599 from adesuwa-tech/feat/288-webgl-quorum-topology
+✨ feat(topology): WebGL quorum topology visualizer
+• Merge pull request #600 from Gentle842/fix/535-explicit-return-types
+🐛 fix(frontend): add explicit return types to formatter helpers
+• Merge pull request #603 from Devadakene/feat/pagination-accessibility
+📝 test(controller): add aria label
+• Merge pull request #631 from Dekah101/main
+✨ feat(token-vault): add rustdoc for initialize function
+• Merge pull request #632 from mazikush365/test/556-cli-flag-parsing
+📝 test(cli): unit-test flag parsing for valid and invalid inputs (#556)
+📝 test(cli): unit-test flag parsing for valid and invalid inputs (#556)
+✨ feat: ## [Backend] Add Default Trait Implementation for Reconciler (#538)
+✨ feat: ## [Contract] Decentralized Options AMM Liquidity Pool (#475)
+• Merge branch 'main' into docs/547-governance-maintainers
+• Merge branch 'main' into test/allowance-exhaustion-reversion
+🐛 fix: ## [Frontend] Standardize Button Padding in Manifest Generat (#527)
+✨ feat(token-vault): add rustdoc for initialize function
+• merge: resolve conflict with main and repair corrupted doc
+• Rebuilds docs/getting-started/local-dev.md from current main and re-applies the
+• "Running tests for a single package" section. The previous revision stored the
+• file as base64 text with characters dropped mid-word ("kcd", "MSRU", "PATHu"),
+• so it is re-authored rather than side-picked.
+🐛 fix: ## [Frontend] Fix Hover State Color Contrast on Navigation L (#540)
+🐛 fix: ## [Docs] Add Quick Note on Running Cargo Test with Specific (#559)
+🐛 fix: ## [Docs] Fix Formatting in Architecture Markdown Table (#534)
+🐛 fix(frontend): add explicit return types to formatters
+📝 test(controller): add unit tests for exponential backoff retry calculations
+✨ feat(topology): add WebGL quorum topology visualizer
+• Renders stellar-core quorum-set dumps as an interactive 3D force-directed
+• graph (issue #288):
+• - quorum_parser: parses three stellar-core dump shapes into a directed
+•   graph, classifying edges as direct trust, indirect trust (inner sets),
+•   or missing peers
+• - topology_renderer: Three.js scene with instanced node spheres and batched
+•   color-coded edge lines; click-to-inspect metadata via raycast picking
+• - grid_repulsion: allocation-free spatial-grid repulsion force replacing
+•   d3's octree forceManyBody, which profiled at ~45% of samples / ~25ms
+•   per tick at 2,300 nodes (over the whole 60 FPS frame budget)
+• - adaptive physics pacing: a frame runs one tick or rewrites GPU buffers,
+•   never both; bench holds ~8ms avg frame at 2,266 nodes / 101k edges
+• - quorum_stream: WebSocket client for live topology updates with
+•   reconnect/backoff and injectable transport for tests
+• - force_graph.tsx React wrapper for app surfaces
+• - vite demo with live stats HUD, trust legend, and node metadata panel
+• Bench (npm run bench) asserts the 60 FPS budget at 2,000+ nodes and is
+• gated on heap growth to catch memory spikes.
+• Closes #288
+• 🤖 Generated with Codebuff
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+📝 docs: document known-valid payload shape and SDK equivalence for issue #228
+• - Expand generateAuthPayload JSDoc with the known-valid expected payload
+•   for the Alice->Router->Liquidity Pool scenario and SDK round-trip notes.
+• - Add semantic deep-equal comment to the reference scenario test.
+• - Tighten Soroban address regex to {1,58} alphanumerics after G/P/O to
+•   accept all generated addresses (56-char test data) without rejecting
+•   short test addresses.
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+✨ feat: complete Smart Contract Auth Hierarchy Builder (issue #228)
+• - Rewrite auth_validator.ts with proper types, cycle detection, deep-contract
+•   resource tracking, and lenient Soroban address format validation
+• - Rewrite TreeView.jsx as a clean React+SVG tree builder with zoom (wheel),
+•   pan (drag on canvas), node drag, and Add/Child/Remove/Validate/Generate JSON
+•   actions. Imports from auth_validator directly (no dynamic import/require).
+• - Add 5 new unit tests verifying generated JSON payloads against known-valid
+•   scenarios: Alice->Router->Pool deterministic payload, deep tree with 1 leaf,
+•   multi-user tree (sorted actions), cycle detection, and malformed address
+•   rejection.
+• - Add frontend/utils/auth_validator.ts as a public re-export shim so consumers
+•   can import from a stable top-level path.
+• - Restore contract IDs and Alice address in createAliceRouterLiquidityPoolTree
+•   to match test expectations.
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+📝 test(controller): add CRD name validation unit tests
+🐛 fix: ## [Docs] Add Code Comment Example to CRD Spec Template (#528)
+🐛 fix: ## [Backend] Optimize Vector Allocation in Telemetry Log For (#555)
+✨ feat: use react-window for virtualized log list in issue #229
+• - Replace custom virtualization with react-window's FixedSizeList for
+•   rendering thousands of log lines without browser lag
+• - LogRow component now uses react-window's item renderer pattern
+• - Pattern-based highlighting preserved using existing DEFAULT_LOG_PATTERNS
+• - Memory usage stays flat due to react-window's windowing
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+✨ feat: ## [Frontend] Add Missing Alt Text to Dashboard Status Icons (#524)
+📝 chore: initialize draft pull request
+🐛 fix(frontend): resolve broken brand logo path and SVG illustration fallbacks in Navbar
+• - Set default brand logo asset path to '../../assets/logo.png' in frontend/components/Navbar.tsx
+• - Provide inline SVG fallback illustration with brand gradient styling when logo asset fails to load
+• - Ensure accessibility with proper ARIA attributes, semantic roles, and responsive navbar layout
+• Signed-off-by: Daluworks <daluchu69@gmail.com>
+📝 test(token-vault): cover allowance exhaustion reversion
+✨ feat: add Smart Contract Auth Hierarchy Builder (#228)
+• - Drag-and-drop tree component for Soroban authorization hierarchies
+• - Validation engine checking Soroban auth payload requirements
+• - JSON payload generation for soroban-cli execution
+• - Alice-Router-Liquidity Pool scenario pre-configured
+• - Arbitrary tree depth with zoom/pan support
+• Complexity: High (200 Points)
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+✨ feat: add UI mockups and unit tests for issues #226 and #229 follow-up
+• Enhance real-time validator log streamer with pattern matcher
+• - Establish WebSocket connection to stellar-operator logging proxy to stream stellar-core logs
+• - Build high-performance virtualized list to render thousands of log lines without browser lag
+• - Implement default highlight rules for critical events: State Fell Behind, Lost Sync, Catchup Started
+• - Use virtual scrolling (react-window pattern) to ensure flat memory usage over long streams
+• Complexity: High (200 Points)
+• Review Notes: Performance metrics demonstrating stable memory consumption over time should be included in follow-up work.
+• Co-Authored-By: Codebuff <noreply@codebuff.com>]
+• Enhance trace replay UI for Soroban transaction debugging
+• - Parse Soroban RPC diagnostic events and execution traces into a structured, sequential timeline
+• - Build a "media player" style interface with play, pause, step-forward, and step-back controls
+• - Display live state of contract storage, CPU instruction count, and memory allocations at each distinct step
+• - Created trace_replay module with types, parser, and main TraceReplay component
+• - Added timeline_scrubber component with media player controls
+• Complexity: High (200 Points)
+• Review Notes: UI mockups, component tests, and validation against a known failing contract trace should be included in follow-up work.
+• Co-Authored-By: Codebuff <noreply@codebuff.com>]
+
+
 ## Chart v2.24.0 (2026-10-23) [minor]
 
 • Merge pull request #633 from ifygreg01-best/feat/ingestion-ring-buffer-issue-75
