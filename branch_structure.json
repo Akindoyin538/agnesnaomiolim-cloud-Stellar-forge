@@ -1,21 +1,18 @@
 {
   "default_branch": "main",
   "branches": [
-    "fix/issue-527-frontend-standardize-button-padding-in-manifest",
-    "fix/issue-528-docs-add-code-comment-example-to-crd-spec",
+
     "main",
     "origin"
   ],
   "parent": {
-    "fix/issue-527-frontend-standardize-button-padding-in-manifest": "main",
-    "fix/issue-528-docs-add-code-comment-example-to-crd-spec": "main",
+
     "main": null,
     "origin": "main"
   },
   "order": [
     "main",
-    "fix/issue-527-frontend-standardize-button-padding-in-manifest",
-    "fix/issue-528-docs-add-code-comment-example-to-crd-spec",
+
     "origin"
   ]
 }
