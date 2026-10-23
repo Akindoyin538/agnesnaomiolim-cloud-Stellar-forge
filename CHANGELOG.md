@@ -5,6 +5,99 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.24.0 (2026-10-23) [minor]
+
+• Merge pull request #633 from ifygreg01-best/feat/ingestion-ring-buffer-issue-75
+• Feat/ingestion ring buffer issue 75
+• Merge pull request #634 from Okorie2000-code/feat/oracle-aggregator-medianizer
+✨ feat(contracts): Decentralized Oracles Aggregator with Medianizer & Outlier Trimming
+✨ feat(contracts): add oracle-aggregator with medianizer and outlier trimming
+• Implements issue #69 — Decentralized Oracles Aggregator with Medianizer &
+• Outlier Trimming for Stellar Soroban.
+• ## What was added
+• ### contracts/oracle-aggregator/
+• - **Cargo.toml** — standalone Soroban workspace using soroban-sdk 27.0.6,
+•   release profile with overflow-checks=true and lto=true.
+• - **src/math.rs** — overflow-safe integer arithmetic module:
+•   - Insertion-sort for fixed-size price arrays (≤20 feeds, no heap alloc)
+•   - Median calculation for both odd and even feed counts
+•   - Outlier trimming via configurable deviation threshold (basis-points)
+•   - Precision scaling constants (PRICE_PRECISION = 10^7, 7 decimal places)
+•   - No floating-point arithmetic; all operations use i128 fixed-point
+• - **src/lib.rs** — full oracle aggregation contract:
+•   - OracleAggregator contract with admin-managed feed registry
+•   - submit_price: authorized feed pushes; validates positive price
+•   - Heartbeat staleness check: excludes feeds older than heartbeat_ledgers
+•   - Outlier trimming: removes feeds deviating beyond deviation_bps from median
+•   - get_price: returns latest AggregatedPrice (price, ledger, contributing_feeds)
+•   - aggregate: explicit re-aggregation trigger
+•   - Admin controls: add_feed, remove_feed, set_deviation, set_heartbeat
+•   - Supports up to 20 authorized oracle feeds
+• ## Tests (51 total, all passing)
+• ### math::tests (31 tests)
+• - sort: empty, single, sorted, reverse, duplicates
+• - median: empty, odd count, even count, precision-scaled feeds
+• - abs_deviation, max_allowed_deviation edge cases
+• - trim_outliers: no outliers, +500% spike (1 of 5), all outliers, single feed
+• - Properties: monotone within threshold, overflow safety, trim-then-median stability
+• - Parameterized spike test: 3..=10 normal feeds + 1 spike
+• ### test:: contract integration (20 tests)
+• - Initialization lifecycle
+• - Feed management (add, duplicate rejection, remove, not-found)
+• - Single feed aggregation
+• - Five-feed median calculation
+• - Issue #69 validation: 1-of-5 oracle spike (+500%) trimmed, median stays at $1.00
+• - Staleness: stale feed excluded after heartbeat window expires
+• - min_feeds guard: error when insufficient inlier feeds
+• - Invalid price rejection (zero, negative)
+• - Unregistered feed rejection
+• - Config update (set_deviation, set_heartbeat)
+• - get_feeds enumeration
+• - Property: identical prices → median equals price
+• - Property: all prices within threshold → all inliers
+• - Property: multiple spikes trimmed
+• - Property: all stale feeds → aggregate fails
+• Merge branch 'main' into feat/ingestion-ring-buffer-issue-75
+🐛 fix(controller): fix non-existent instrument skip parameter in wasm_mutate_handler
+• The #[instrument(skip(state, body))] attribute referenced 'body' which
+• does not exist as a function parameter — the actual parameter is 'review'.
+• This caused a compile error blocking the entire controller crate.
+• Fixes: controller/src/webhook/wasm_mutator.rs:188
+• Resolves: #75 (ingestion ring buffer + stream manager — build now clean)
+• All 48 unit tests and 3 doc-tests pass with 0 errors.
+• Reapply "fix(ci): resolve failing CI checks on ingestion ring-buffer PR"
+• This reverts commit f87682a5752f265d2a69761526ce8f3514cc2058.
+• Revert "fix(ci): resolve failing CI checks on ingestion ring-buffer PR"
+• This reverts commit b68ebfd8602c7cb82fe4bcafb9aaae1a1abe98d9.
+🐛 fix(ci): resolve failing CI checks on ingestion ring-buffer PR
+• - contracts.yml: rename cache key from 'contracts-royalty-splitter' to
+•   'ci-royalty-splitter' to comply with check-cache-keys.sh key format
+•   (must start with ci|perf|soak|release|chaos|docs|verify|image|dep)
+• - dr-drill.yml, tenant_reconciler.rs, pdb/reconciler.rs, backup-verify.rs:
+•   convert bare TODO/FIXME comments to TODO(exempt: reason) format required
+•   by check-stale-todos.sh
+• - scripts/check-secrets.sh: suppress three false-positive findings:
+•   * gitops_secrets.rs is base64-encoded source (not a real Stellar seed)
+•   * tls/rotator.rs and tls/ca.rs contain 'BEGIN PRIVATE KEY' only in
+•     #[cfg(test)] assert! strings, not committed key material
+•   * blue_green_core.rs 'rollout-*' test tokens match token= pattern
+• - charts/stellar-operator/values.yaml: fix two YAML parse errors
+•   (indented comment treated as key, missing space after list dash)
+•   and add missing default stubs for scpAnalytics, horizonHpa,
+•   byzantineWatcher, gitopsSecrets, crossRegion, featureFlags,
+•   monitoring, security.egressShaper so helm template renders cleanly
+• - charts/stellar-operator/templates: fix toYAml -> toYaml, nIndent ->
+•   nindent, malformed {-- with, and nil-pointer accesses for otel.collector
+•   and scp-kafka-sidecar
+• - Cargo.toml: register all src/bin/*.rs files that were missing [[bin]]
+•   entries (conventional-commit-check, changelog-gen, backup-verify,
+•   stellar-bootstrap-verify, stellar-scaffold, stellar-logs,
+•   stellar-health-sidecar, stellar-log-shipper, doc_check,
+•   check_pipeline_log_redaction, check_unreachable_modules, crdgen)
+• - Makefile: add missing preflight, lint-strict, check-third-party-licenses,
+•   and completions targets that CI jobs invoke via 'make <target>'
+
+
 ## Chart v2.23.0 (2026-10-22) [minor]
 
 • Merge pull request #604 from Sirbeejay16/chore/remove-unused-imports-reconciler
