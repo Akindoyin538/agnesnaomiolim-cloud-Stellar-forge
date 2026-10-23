@@ -85,7 +85,13 @@ impl PdbReconciler {
         } else if ready_count >= 2 {
             1
         } else {
-            0
+            // TODO(exempt: quorum-aware PDB calculation deferred to follow-up): Implement full quorum calculation. For now, allow at
+            // most one unreplicated pod to be removed when we have at least 2 ready.
+            if ready_count >= 2 {
+                1
+            } else {
+                0
+            }
         };
 
         debug!(
