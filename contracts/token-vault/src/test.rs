@@ -1,5 +1,6 @@
 #![cfg(test)]
 
+use super::{TokenVault, TokenVaultClient};
 
 use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
@@ -71,6 +72,21 @@ fn test_standard_transfer_moves_tokens() {
 }
 
 #[test]
+#[should_panic(expected = "insufficient balance")]
+fn test_transfer_more_than_balance_panics() {
+    let (_env, client, _admin, alice, bob) = setup();
+
+    client.mint(&alice, &100);
+    client.transfer(&alice, &bob, &101);
+}
+
+#[test]
+#[should_panic(expected = "amount must not be negative")]
+fn test_negative_amount_transfer_panics() {
+    let (_env, client, _admin, alice, bob) = setup();
+
+    client.mint(&alice, &100);
+    client.transfer(&alice, &bob, &-1);
 
 
 }

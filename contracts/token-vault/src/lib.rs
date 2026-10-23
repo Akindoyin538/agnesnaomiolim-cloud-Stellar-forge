@@ -4,6 +4,9 @@ pub mod error;
 #[cfg(test)]
 mod test;
 
+use soroban_sdk::{
+    contract, contractimpl, contracttype, symbol_short, Address, Env, String,
+};
 
 pub const DEFAULT_MAX_GAS_LIMIT: u64 = 50_000_000;
 pub const MAX_SUPPLY: i128 = i128::MAX;
@@ -82,13 +85,7 @@ impl TokenVault {
     /// * `admin` - The address granted administrative privileges; this address must authorize the call.
     /// * `decimals` - Number of decimal places used to represent token amounts.
     /// * `name` - Descriptive name of the vault token.
-    /// * `symbol` - Short ticker symbol for the token.
-    ///
-    /// # Returns
-    /// Returns `()` after the vault has been initialized.
-    ///
-    /// # Panics
-    /// Panics if the vault has already been initialized or if `admin` does not authorize the call.
+
     pub fn initialize(env: Env, admin: Address, decimals: u32, name: String, symbol: String) {
         assert!(
             !env.storage().instance().has(&DataKey::Admin),
@@ -137,6 +134,7 @@ impl TokenVault {
     /// * `amount` - Amount of tokens to mint (must be non-negative).
     pub fn mint(env: Env, to: Address, amount: i128) {
         require_amount(amount);
+        ensure_not_paused(&env);
 
         let admin: Address = env
             .storage()
@@ -216,6 +214,11 @@ impl TokenVault {
     /// leaving balances unchanged and emitting a transfer event.
     pub fn transfer(env: Env, from: Address, to: Address, amount: i128) {
         require_amount(amount);
+        ensure_not_paused(&env);
+        from.require_auth();
+
+        let from_balance = balance(&env, &from);
+        assert!(from_balance >= amount, "insufficient balance");
 
 
         set_balance(&env, &from, from_balance - amount);
@@ -232,6 +235,7 @@ impl TokenVault {
 
     pub fn transfer_from(env: Env, spender: Address, from: Address, to: Address, amount: i128) {
         require_amount(amount);
+        ensure_not_paused(&env);
 
         spender.require_auth();
         let data = allowance(&env, &from, &spender);
@@ -248,6 +252,7 @@ impl TokenVault {
             },
         );
         let from_balance = balance(&env, &from);
+        assert!(from_balance >= amount, "insufficient balance");
 
         set_balance(&env, &from, from_balance - amount);
         set_balance(
@@ -263,6 +268,10 @@ impl TokenVault {
 
     pub fn burn(env: Env, from: Address, amount: i128) {
         require_amount(amount);
+        ensure_not_paused(&env);
+        from.require_auth();
+        let current = balance(&env, &from);
+        assert!(current >= amount, "insufficient balance");
 
         set_balance(&env, &from, current - amount);
         let supply: i128 = env
@@ -282,6 +291,7 @@ mod tests {
     use super::*;
     use soroban_sdk::{testutils::Address as _, Address, Env, String};
 
+    fn setup() -> (Env, TokenVaultClient<'static>, Address, Address, Address, Address) {
     fn setup() -> (
         Env,
         TokenVaultClient<'static>,
@@ -357,3 +367,4 @@ mod tests {
         client.transfer_from(&spender, &alice, &bob, &50);
     }
 }
+
