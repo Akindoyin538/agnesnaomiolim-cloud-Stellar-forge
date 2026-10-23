@@ -1,24 +1,18 @@
 {
   "default_branch": "main",
   "branches": [
-    "fix/535-explicit-return-types",
-    "issue813",
-    "issues619",
+
     "main",
     "origin"
   ],
   "parent": {
-    "fix/535-explicit-return-types": "main",
-    "issue813": "main",
-    "issues619": "main",
+n
     "main": null,
     "origin": "main"
   },
   "order": [
     "main",
-    "fix/535-explicit-return-types",
-    "issue813",
-    "issues619",
+
     "origin"
   ]
 }
