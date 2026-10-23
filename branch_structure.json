@@ -1,18 +1,18 @@
 {
   "default_branch": "main",
   "branches": [
-    "feat/issue-475-contract-decentralized-options-amm-liquidity",
+
     "main",
     "origin"
   ],
   "parent": {
-    "feat/issue-475-contract-decentralized-options-amm-liquidity": "main",
+
     "main": null,
     "origin": "main"
   },
   "order": [
     "main",
-    "feat/issue-475-contract-decentralized-options-amm-liquidity",
+
     "origin"
   ]
 }
