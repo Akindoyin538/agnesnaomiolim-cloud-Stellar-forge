@@ -9,17 +9,19 @@
 //!
 //! # Modules
 //!
+//! - [`apis`] — Custom resource validation and API schema utilities.
 //! - [`deployment`] — StellarNode deployment pipeline, including the
 //!   [`deployment::optimizer`] WASM bytecode optimizer.
 //! - [`quorum`] — Quorum-set graph analysis utilities.
 //! - [`webhook`] — Admission webhook handlers, including the
 //!   [`webhook::wasm_mutator`] MutatingAdmissionWebhook for WASM optimization.
-//! - [`backup`] — Automated storage snapshot and cloud backup controller,
-//!   including the [`backup::snapshot::SnapshotController`] loop and the
-//!   [`backup::cloud::SnapshotProvider`] abstraction for AWS EBS, GCP PD, and
-//!   local storage back-ends.
+//! - [`ingestion`] — Asynchronous XDR ledger ring buffer and stream manager
+//!   (issue #75).  Decouples Stellar Core frame ingestion from the operator
+//!   reconciliation loop via a bounded ring buffer with configurable
+//!   backpressure and a parallel producer-consumer worker pool.
 
-pub mod backup;
+pub mod apis;
 pub mod deployment;
+pub mod ingestion;
 pub mod quorum;
 pub mod webhook;

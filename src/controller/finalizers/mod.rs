@@ -1,22 +1,40 @@
 // Copyright 2024 Stellar-K8s Contributors
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-//! Finalizer handling for StellarNode cleanup
+// Licensed under the Apache License, Version 2.0 (the "License")
+//! Finalizer handling and cleanup recovery for StellarNode resources.
 //!
-//! Finalizers ensure that when a StellarNode is deleted:
-//! 1. All dependent resources (Deployments, Services, ConfigMaps) are cleaned up
-//! 2. Persistent Volumes/Claims are deleted based on retention policy
-//! 3. External resources (cloud storage, DNS) are properly removed
+//! ## Modules
+//!
+//! - [`cleanup`] — background GC controller that recovers stuck finalizers
+//!   after controller crashes, with cloud storage verification.
+//! - [`cloud_verify`] — cloud provider (AWS EBS / GCP PD) volume-attachment
+//!   verification to ensure volumes are detached before finalizer removal.
+//!
+//! ## Safety Architecture
+//!
+//! ```text
+//!  StellarNode (Terminating)
+//!       │
+//!       ▼
+//!  cleanup::scan_and_recover()
+//!       │
+//!       ├─ find_owned_pvcs()     ← lists PVCs by ownerRef / name pattern
+//!       │
+//!       ├─ CloudVerifier::verify_volume_detached()  ← for EACH PVC
+//!       │       │
+//!       │       ├─ AWS EBS: EC2 DescribeVolumes API
+//!       │       └─ GCP PD:  Compute Disk GET API
+//!       │
+//!       └─ strip_finalizer()    ← ONLY if ALL PVCs confirmed detached
+//! ```
+//!
+//! No finalizer is ever removed without cloud API confirmation.
 
+pub mod cleanup;
+pub mod cloud_verify;
+
+// Re-export everything from the original flat finalizers module so existing
+// call-sites (`super::finalizers::STELLAR_NODE_FINALIZER`, etc.) continue to
+// work without modification.
 use kube::{
     api::{Api, Patch, PatchParams},
     Client, ResourceExt,
@@ -27,31 +45,18 @@ use tracing::info;
 use crate::crd::StellarNode;
 use crate::error::Result;
 
-/// Finalizer name used to protect StellarNode resources
-///
-/// This finalizer is added when a StellarNode is created and prevents
-/// the resource from being deleted until cleanup is complete.
+/// Finalizer name used to protect StellarNode resources.
 pub const STELLAR_NODE_FINALIZER: &str = "stellarnode.stellar.org/finalizer";
 
-/// Add finalizer to a StellarNode if not present
-///
-/// Called during the Apply phase to ensure the finalizer is set.
-/// The kube-rs `finalizer` helper handles this automatically, but
-/// this function can be used for manual finalizer management.
+/// Add our finalizer to a StellarNode if not already present.
 pub async fn add_finalizer(client: &Client, node: &StellarNode) -> Result<()> {
     let namespace = node.namespace().unwrap_or_else(|| "default".to_string());
     let api: Api<StellarNode> = Api::namespaced(client.clone(), &namespace);
 
-    let finalizers: Vec<String> = node.finalizers().to_vec();
+    let mut finalizers = node.finalizers().to_vec();
     if !finalizers.contains(&STELLAR_NODE_FINALIZER.to_string()) {
-        let mut new_finalizers = finalizers;
-        new_finalizers.push(STELLAR_NODE_FINALIZER.to_string());
-
-        let patch = json!({
-            "metadata": {
-                "finalizers": new_finalizers
-            }
-        });
+        finalizers.push(STELLAR_NODE_FINALIZER.to_string());
+        let patch = json!({ "metadata": { "finalizers": finalizers } });
         api.patch(
             &node.name_any(),
             &PatchParams::apply("stellar-operator"),
@@ -63,10 +68,7 @@ pub async fn add_finalizer(client: &Client, node: &StellarNode) -> Result<()> {
     Ok(())
 }
 
-/// Remove finalizer after cleanup is complete
-///
-/// Called after all resources have been cleaned up. Once the finalizer
-/// is removed, Kubernetes will complete the deletion of the StellarNode.
+/// Remove our finalizer after cleanup is complete.
 pub async fn remove_finalizer(client: &Client, node: &StellarNode) -> Result<()> {
     let namespace = node.namespace().unwrap_or_else(|| "default".to_string());
     let api: Api<StellarNode> = Api::namespaced(client.clone(), &namespace);
@@ -78,12 +80,7 @@ pub async fn remove_finalizer(client: &Client, node: &StellarNode) -> Result<()>
         .cloned()
         .collect();
 
-    let patch = json!({
-        "metadata": {
-            "finalizers": finalizers
-        }
-    });
-
+    let patch = json!({ "metadata": { "finalizers": finalizers } });
     api.patch(
         &node.name_any(),
         &PatchParams::apply("stellar-operator"),
@@ -95,15 +92,12 @@ pub async fn remove_finalizer(client: &Client, node: &StellarNode) -> Result<()>
     Ok(())
 }
 
-/// Check if the node is being deleted
-///
-/// A deletion timestamp indicates the user has requested deletion,
-/// but finalizers are preventing the actual removal.
+/// Returns `true` when the node has a non-zero `deletionTimestamp`.
 pub fn is_being_deleted(node: &StellarNode) -> bool {
     node.metadata.deletion_timestamp.is_some()
 }
 
-/// Check if the node has our finalizer
+/// Returns `true` when the node carries our finalizer.
 pub fn has_finalizer(node: &StellarNode) -> bool {
     node.finalizers()
         .iter()
@@ -125,7 +119,6 @@ mod tests {
             node_type: NodeType::Validator,
             network: StellarNetwork::Testnet,
             version: "v21.0.0".to_string(),
-            history_mode: Default::default(),
             resources: ResourceRequirements {
                 requests: ResourceSpec {
                     cpu: "500m".to_string(),
@@ -139,50 +132,9 @@ mod tests {
             storage: StorageConfig {
                 storage_class: "standard".to_string(),
                 size: "100Gi".to_string(),
-                retention_policy: Default::default(),
-                annotations: None,
                 ..Default::default()
             },
-            validator_config: None,
-            horizon_config: None,
-            soroban_config: None,
             replicas: 1,
-            min_available: None,
-            max_unavailable: None,
-            suspended: false,
-            alerting: false,
-            database: None,
-            managed_database: None,
-            autoscaling: None,
-            vpa_config: None,
-            ingress: None,
-            load_balancer: None,
-            global_discovery: None,
-            cross_cluster: None,
-            strategy: Default::default(),
-            maintenance_mode: false,
-            network_policy: None,
-            dr_config: None,
-            pod_anti_affinity: Default::default(),
-            placement: Default::default(),
-            topology_spread_constraints: None,
-            cve_handling: None,
-            snapshot_schedule: None,
-            restore_from_snapshot: None,
-            read_replica_config: None,
-            db_maintenance_config: None,
-            oci_snapshot: None,
-            service_mesh: None,
-            forensic_snapshot: None,
-            label_propagation: None,
-            read_pool_endpoint: None,
-            resource_meta: None,
-            sidecars: None,
-            cert_manager: None,
-            nat_traversal: None,
-            custom_network_passphrase: None,
-            cross_cloud_failover: None,
-            hitless_upgrade: None,
             ..Default::default()
         }
     }
@@ -204,8 +156,7 @@ mod tests {
             spec: create_test_spec(),
             status: None,
         };
-
-        assert!(has_finalizer(&node), "Should detect finalizer when present");
+        assert!(has_finalizer(&node));
     }
 
     #[test]
@@ -220,33 +171,23 @@ mod tests {
             spec: create_test_spec(),
             status: None,
         };
-
-        assert!(
-            !has_finalizer(&node),
-            "Should not detect finalizer when absent"
-        );
+        assert!(!has_finalizer(&node));
     }
 
     #[test]
     fn test_is_being_deleted_returns_true_when_deletion_timestamp_set() {
-        use chrono::Utc;
-
         let node = StellarNode {
             metadata: ObjectMeta {
                 name: Some("test-node".to_string()),
                 namespace: Some("default".to_string()),
-                deletion_timestamp: Some(Time(Utc::now())),
+                deletion_timestamp: Some(Time(chrono::Utc::now())),
                 finalizers: Some(vec![STELLAR_NODE_FINALIZER.to_string()]),
                 ..Default::default()
             },
             spec: create_test_spec(),
             status: None,
         };
-
-        assert!(
-            is_being_deleted(&node),
-            "Should detect deletion when timestamp is set"
-        );
+        assert!(is_being_deleted(&node));
     }
 
     #[test]
@@ -262,16 +203,8 @@ mod tests {
             spec: create_test_spec(),
             status: None,
         };
-
-        assert!(
-            !is_being_deleted(&node),
-            "Should not detect deletion when timestamp is absent"
-        );
+        assert!(!is_being_deleted(&node));
     }
-
-    // -----------------------------------------------------------------------
-    // PVC retention policy tests
-    // -----------------------------------------------------------------------
 
     fn spec_with_retention(policy: crate::crd::types::RetentionPolicy) -> StellarNodeSpec {
         let mut spec = create_test_spec();
@@ -282,36 +215,22 @@ mod tests {
     #[test]
     fn test_should_delete_pvc_when_policy_is_delete() {
         let spec = spec_with_retention(crate::crd::types::RetentionPolicy::Delete);
-        assert!(
-            spec.should_delete_pvc(),
-            "should_delete_pvc must return true when retention policy is Delete"
-        );
+        assert!(spec.should_delete_pvc());
     }
 
     #[test]
     fn test_should_not_delete_pvc_when_policy_is_retain() {
         let spec = spec_with_retention(crate::crd::types::RetentionPolicy::Retain);
-        assert!(
-            !spec.should_delete_pvc(),
-            "should_delete_pvc must return false when retention policy is Retain"
-        );
+        assert!(!spec.should_delete_pvc());
     }
 
     #[test]
     fn test_default_retention_policy_is_delete() {
-        // The default StorageConfig uses RetentionPolicy::Delete, so PVCs are
-        // cleaned up automatically unless the user explicitly opts into Retain.
-        let spec = create_test_spec();
-        assert!(
-            spec.should_delete_pvc(),
-            "default retention policy must be Delete"
-        );
+        assert!(create_test_spec().should_delete_pvc());
     }
 
     #[test]
     fn test_finalizer_present_on_node_with_delete_policy() {
-        // A node with Delete policy must still carry the finalizer so the
-        // operator has a chance to remove the PVC before the resource is gone.
         let node = StellarNode {
             metadata: ObjectMeta {
                 name: Some("validator-delete".to_string()),
@@ -322,15 +241,12 @@ mod tests {
             spec: spec_with_retention(crate::crd::types::RetentionPolicy::Delete),
             status: None,
         };
-
         assert!(has_finalizer(&node));
         assert!(node.spec.should_delete_pvc());
     }
 
     #[test]
     fn test_finalizer_present_on_node_with_retain_policy() {
-        // A node with Retain policy also carries the finalizer; the operator
-        // skips PVC deletion but still cleans up other resources.
         let node = StellarNode {
             metadata: ObjectMeta {
                 name: Some("validator-retain".to_string()),
@@ -341,26 +257,23 @@ mod tests {
             spec: spec_with_retention(crate::crd::types::RetentionPolicy::Retain),
             status: None,
         };
-
         assert!(has_finalizer(&node));
         assert!(!node.spec.should_delete_pvc());
     }
 
     #[test]
     fn test_retention_policy_roundtrip_delete() {
-        let policy = crate::crd::types::RetentionPolicy::Delete;
-        let json = serde_json::to_string(&policy).expect("serialize");
-        let restored: crate::crd::types::RetentionPolicy =
-            serde_json::from_str(&json).expect("deserialize");
-        assert_eq!(policy, restored);
+        let p = crate::crd::types::RetentionPolicy::Delete;
+        let json = serde_json::to_string(&p).unwrap();
+        let r: crate::crd::types::RetentionPolicy = serde_json::from_str(&json).unwrap();
+        assert_eq!(p, r);
     }
 
     #[test]
     fn test_retention_policy_roundtrip_retain() {
-        let policy = crate::crd::types::RetentionPolicy::Retain;
-        let json = serde_json::to_string(&policy).expect("serialize");
-        let restored: crate::crd::types::RetentionPolicy =
-            serde_json::from_str(&json).expect("deserialize");
-        assert_eq!(policy, restored);
+        let p = crate::crd::types::RetentionPolicy::Retain;
+        let json = serde_json::to_string(&p).unwrap();
+        let r: crate::crd::types::RetentionPolicy = serde_json::from_str(&json).unwrap();
+        assert_eq!(p, r);
     }
 }
