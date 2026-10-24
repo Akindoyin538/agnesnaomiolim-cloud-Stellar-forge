@@ -709,4 +709,3 @@ This project is licensed under the [Apache 2.0 License](LICENSE).
 
 See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes and releases.
 
-> **Sizing your cluster?** The [Capacity Planning & Storage Scaling Guide](docs/operations/capacity-planning.md) documents baseline CPU, memory, and IOPS requirements for Testnet vs Mainnet Validators, Horizon API nodes, and Soroban RPC nodes, along with mathematical storage growth projections and the operator's automated EBS/GCP volume resizing behavior.
