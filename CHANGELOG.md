@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.26.0 (2026-10-24) [minor]
+
+• Merge pull request #584 from oluwatoyincaleb277-blip/feat/issue-479-documentation-capacity-planning-storage-scaling
+📝 docs: add capacity planning and storage scaling guide
+🐛 fix: resolve merge conflicts with base
+✨ feat: ## [Documentation] Capacity Planning & Storage Scaling Calcu (#479)
+
+
 ## Chart v2.25.0 (2026-10-23) [minor]
 
 • Merge pull request #585 from ritchiejhay/feat/issue-475-contract-decentralized-options-amm-liquidity
