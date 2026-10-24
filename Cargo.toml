@@ -117,7 +117,7 @@ wasmtime-wasi = { version = "24.0.7", features = ["preview1"], optional = true }
 tokio-rustls = { version = "0.26", optional = true }
 
 # Base64 for Wasm plugin loading
-# HMAC-SHA256 for webhook payload signing(mac = "0.12"
+# HMAC-SHA256 for webhook payload signing(mac = "0.12"
 http = "1"
 jsonwebtoken = "9"
 lru = "0.12"
@@ -155,14 +155,7 @@ md5 = "0.8.0"
 # tar archive extraction for snapshot bootstrapping (#119)
 tar = "0.4"
 
-# Terminal UI for kubectl-stellar validator diagnostics
-color-eye = "0.3"
-
-[server-dependencies]
-chrono = "0.4"
-serde_json = "1"
 walkdir = "2"
-serde = { version = "1", features = ["derive"] }
 
 [features]
 default = ["rest-api", "metrics", "admission-webhook", "k8s-v1-30", "kafka"]
@@ -234,6 +227,54 @@ required-features = ["rest-api", "metrics"]
 [[bin]]
 name = "stellar-metrics-proxy"
 path = "src/bin/stellar-metrics-proxy.rs"
+
+[[bin]]
+name = "conventional-commit-check"
+path = "src/bin/conventional-commit-check.rs"
+
+[[bin]]
+name = "changelog-gen"
+path = "src/bin/changelog-gen.rs"
+
+[[bin]]
+name = "backup-verify"
+path = "src/bin/backup-verify.rs"
+
+[[bin]]
+name = "stellar-bootstrap-verify"
+path = "src/bin/stellar-bootstrap-verify.rs"
+
+[[bin]]
+name = "stellar-scaffold"
+path = "src/bin/stellar-scaffold.rs"
+
+[[bin]]
+name = "stellar-logs"
+path = "src/bin/stellar-logs.rs"
+
+[[bin]]
+name = "stellar-health-sidecar"
+path = "src/bin/stellar-health-sidecar.rs"
+
+[[bin]]
+name = "stellar-log-shipper"
+path = "src/bin/stellar-log-shipper.rs"
+
+[[bin]]
+name = "doc_check"
+path = "src/bin/doc_check.rs"
+
+[[bin]]
+name = "check_pipeline_log_redaction"
+path = "src/bin/check_pipeline_log_redaction.rs"
+
+[[bin]]
+name = "check_unreachable_modules"
+path = "src/bin/check_unreachable_modules.rs"
+
+[[bin]]
+name = "crdgen"
+path = "src/bin/crdgen.rs"
 
 [workspace]
 members = ["wasm-plugins", "telemetry", "security/p2p-firewall", "contracts/debt-ceiling"]
