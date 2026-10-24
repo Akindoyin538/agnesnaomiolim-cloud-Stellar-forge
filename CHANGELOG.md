@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.27.0 (2026-10-24) [minor]
+
+• Merge pull request #579 from TeeGeason05/fix/issue-468-backend-dynamic-kafka-partitioning-for-scp
+✨ feat: dynamic Kafka partitioning for SCP analytics engine
+• Merge branch 'main' into fix/issue-468-backend-dynamic-kafka-partitioning-for-scp
+• Merge pull request #581 from Anxy-dev4/fix/issue-478-documentation-wasm-plugin-development-and
+📝 docs: add Wasm plugin API reference and hello-world tutorial
+• Merge pull request #582 from Babigdk/test/issue-526-token-vault-zero-amount-transfer
+📝 test(contract): add unit test for token vault zero-amount transfer (#…
+🐛 fix: resolve merge conflicts with base
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+🐛 fix: resolve merge conflicts with base
+• merge: resolve conflict with main in hello-world Cargo.toml
+• Keeps main's [workspace] opt-out and restores the [lib] header, which the
+• previous revision stored as `lib]` — an unparseable manifest.
+• Merge branch 'main' into test/issue-526-token-vault-zero-amount-transfer
+🐛 fix: ## [Documentation] Wasm Plugin Development and Sandboxing AP (#478)
+🐛 fix: ## [Backend] Dynamic Kafka Partitioning for SCP Analytics En (#468)
+
+
 ## Chart v2.26.0 (2026-10-24) [minor]
 
 • Merge pull request #584 from oluwatoyincaleb277-blip/feat/issue-479-documentation-capacity-planning-storage-scaling
