@@ -22,6 +22,10 @@
 //! - [`apis`] — Custom resource validation and API schema utilities.
 //! - [`deployment`] — StellarNode deployment pipeline, including the
 //!   [`deployment::optimizer`] WASM bytecode optimizer.
+//! - [`finalizers`] — Kubernetes finalizer cleanup recovery controller.
+//!   Detects `StellarNode` resources stuck in `Terminating` state, verifies
+//!   cloud storage detachment via AWS EBS / GCP PD APIs, and safely removes
+//!   orphaned finalizers without risking data loss.
 //! - [`quorum`] — Quorum-set graph analysis utilities.
 //! - [`webhook`] — Admission webhook handlers, including the
 
@@ -29,7 +33,7 @@
 pub mod apis;
 pub mod crd;
 pub mod deployment;
-pub mod ingestion;
+
 pub mod quorum;
 pub mod testnet;
 pub mod webhook;
