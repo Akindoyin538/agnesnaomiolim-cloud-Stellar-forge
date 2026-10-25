@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.31.0 (2026-10-25) [minor]
+
+• Merge pull request #481 from Devadakene/feat/host-function-fee-calibrator
+✨ feat(telemetry): add Soroban host function calibrator and fee exporter sidecar
+• Merge branch 'main' into feat/host-function-fee-calibrator
+✨ feat(telemetry): add Soroban host function calibrator and fee exporter sidecar
+
+
 ## Chart v2.30.0 (2026-10-25) [minor]
 
 • Merge pull request #511 from jerrzxy/feat/issue-286-enhancement-gitops-deployment-engine-for
