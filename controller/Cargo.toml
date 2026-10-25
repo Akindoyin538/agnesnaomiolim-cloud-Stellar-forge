@@ -2,18 +2,22 @@
 name = "controller"
 version = "0.1.0"
 edition = "2021"
-description = "Stellar-K8s controller: deployment pipeline and admission webhook modules"
+description = "Stellar-K8s controller: deployment pipeline, admission webhook and ephemeral testnet operator modules"
 license = "Apache-2.0"
 
 [dependencies]
 # Async runtime
 tokio = { version = "1", features = ["full"] }
 
-# HTTP client for sidecar communication
+# HTTP client for sidecar communication and cloud provider API calls
 reqwest = { version = "0.12", default-features = false, features = [
     "json",
     "rustls-tls-manual-roots",
+    "rustls-tls",
 ] }
+
+# Async traits (used by CloudVolumeVerifier and KubeClient)
+async-trait = "0.1"
 
 # HTTP server (sidecar + axum handler)
 axum = { version = "0.8", features = [] }
@@ -29,6 +33,9 @@ thiserror = "1"
 
 # Logging
 tracing = "0.1"
+
+# Async trait support (used by ingestion::worker::LedgerProcessor)
+async-trait = "0.1"
 
 # Temporary files for wasm-opt subprocess I/O
 tempfile = "3"
