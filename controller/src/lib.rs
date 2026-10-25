@@ -1,5 +1,15 @@
 // Copyright 2024 Stellar-K8s Contributors
-// SPDX-License-Identifier: Apache-2.0
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 //! Stellar-K8s controller crate.
 //!
 //! This crate provides the deployment pipeline and admission webhook modules
@@ -14,15 +24,7 @@
 //!   [`deployment::optimizer`] WASM bytecode optimizer.
 //! - [`quorum`] — Quorum-set graph analysis utilities.
 //! - [`webhook`] — Admission webhook handlers, including the
-//!   [`webhook::wasm_mutator`] MutatingAdmissionWebhook for WASM optimization.
-//! - [`ingestion`] — Asynchronous XDR ledger ring buffer and stream manager
-//!   (issue #75).  Decouples Stellar Core frame ingestion from the operator
-//!   reconciliation loop via a bounded ring buffer with configurable
-//!   backpressure and a parallel producer-consumer worker pool.
-//! - [`crd`] — Custom resources owned by this crate, including the
-//!   [`crd::testnet::StellarTestnet`] CRD for ephemeral testnets (issue #246).
-//! - [`testnet`] — Reconciliation loop that provisions and tears down
-//!   ephemeral single-node Stellar networks from `StellarTestnet` resources.
+
 
 pub mod apis;
 pub mod crd;
