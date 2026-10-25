@@ -5,6 +5,73 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.30.0 (2026-10-25) [minor]
+
+• Merge pull request #511 from jerrzxy/feat/issue-286-enhancement-gitops-deployment-engine-for
+✨ feat: add GitOps sync engine with health-check rollback for Stellar clusters
+• Merge branch 'main' into feat/issue-286-enhancement-gitops-deployment-engine-for
+• Merge pull request #437 from Ukorstack/feat/finalizer-cleanup-recovery-controller-46
+✨ feat(controller): Kubernetes finalizer cleanup recovery controller fo…
+• Merge branch 'main' into feat/finalizer-cleanup-recovery-controller-46
+🐛 fix: resolve merge conflicts with base
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+✨ feat: ## [Enhancement] GitOps Deployment Engine for Stellar Cluste (#286)
+✨ feat(controller): Kubernetes finalizer cleanup recovery controller for orphaned volumes
+• Implement a background garbage-collection reconciler that safely resolves
+• StellarNode resources permanently stuck in the Terminating state due to
+• controller process interruptions (crash, OOM kill, rolling upgrade, node
+• failure).
+• ## Problem
+• When the controller is killed between setting deletionTimestamp and removing
+• the finalizer 'stellarnode.stellar.org/finalizer', the resource stays
+• Terminating forever. Manual intervention was required, risking data leaks
+• if the finalizer was stripped before the volume detached.
+• ## Solution
+• Three new files under controller/src/finalizers/:
+• ### cloud_verify.rs — CloudVolumeVerifier trait + AWS/GCP implementations
+• - CloudVolumeVerifier async trait: is_volume_detached(volume_id, region) -> bool
+• - AwsEbsVerifier: calls EC2 DescribeVolumes API, parses XML attachmentSet
+• - GcpPdVerifier: calls Compute Engine disks.get, inspects 'users' field
+•   (404 → already cleaned up → safe; non-empty users → still attached)
+• - MockCloudVerifier: deterministic test double (detached/attached/error)
+• - verifier_for_provider() factory: dispatches on stellar.org/cloud-provider
+• - UnknownProviderVerifier: safe-by-default, always returns false
+• ### cleanup.rs — FinalizerCleanupReconciler
+• - KubeClient async trait: list_terminating_nodes / remove_finalizer
+• - MockKubeClient: in-memory test double tracking removed finalizers
+• - FinalizerCleanupReconciler::run_once(): detect → verify → patch loop
+• - FinalizerCleanupReconciler::run(): infinite background loop (30s default)
+• - ReconcileOutcome enum: FinalizerRemoved | VolumeStillAttached |
+•   VerificationError | NoFinalizerPresent
+• - build_finalizer_remove_patch() / strip_stellar_finalizer() helpers
+• ### mod.rs — module declaration and safety docs
+• ## Safety Invariant
+• A finalizer is NEVER removed unless CloudVolumeVerifier::is_volume_detached
+• returns Ok(true). Any error or Ok(false) causes a retry next cycle.
+• This prevents cloud data leaks or filesystem corruption on large validator
+• volumes (tested with simulated 500 GiB validator crash-recovery scenario).
+• ## Tests
+• 23 unit tests across cloud_verify.rs and cleanup.rs:
+• - AWS XML parser: attached/attaching blocked; detached/empty allowed
+• - Mock verifier: detached/attached/error paths
+• - Input validation: invalid vol- prefix, short volume ID, empty disk name
+• - Factory function: correct verifier dispatch + unknown provider safety
+• - Happy path: finalizer removed end-to-end
+• - Safety: no removal when volume still attached
+• - Safety: no removal on cloud API error
+• - Safety: no removal on Kubernetes patch failure
+• - Crash-recovery simulation: two-pass scenario (attached → detached)
+• - Patch helpers: strip_stellar_finalizer idempotency, JSON correctness
+• ## Other Changes
+• - controller/Cargo.toml: add async-trait = "0.1" dependency
+• - controller/src/lib.rs: expose pub mod finalizers
+• - docs/finalizer-cleanup-recovery.md: architectural note with safety
+•   verification steps, crash-recovery validation, test coverage table,
+•   cloud provider annotation reference, operator integration example
+• Closes #46
+
+
 ## Chart v2.29.0 (2026-10-25) [minor]
 
 • Merge pull request #482 from Devadakene/feat/heaptrack-profiling
