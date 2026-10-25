@@ -415,6 +415,21 @@ pub fn calculate(
     }
 }
 
+/// Derive the topology used for the calculation from the validators' names and
+/// a minimum quorum size.
+///
+/// This is used by the reconciler when it needs to build a topology from the
+/// `StellarNode` resources it is watching.
+pub fn topology_from_validators<'a, I>(validators: I, min_quorum: usize) -> TopologyGraph
+where
+    I: IntoIterator<Item = &'a str>,
+{
+    let mut ids: Vec<String> = validators.into_iter().map(str::to_string).collect();
+    ids.sort();
+    ids.dedup();
+    full_mesh_topology(&ids, Some(min_quorum))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

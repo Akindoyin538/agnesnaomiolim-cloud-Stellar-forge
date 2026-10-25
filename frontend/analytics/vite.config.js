@@ -12,6 +12,7 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
         perf: path.resolve(__dirname, 'perf.html'),
       },
+      external: ['d3'],
     },
   },
   resolve: {
@@ -46,9 +47,4 @@ export default defineConfig({
       },
     },
   },
-  build: {
-    rollOptions: {
-      external: ['d3'],
-    },
-  },
-;
+});
