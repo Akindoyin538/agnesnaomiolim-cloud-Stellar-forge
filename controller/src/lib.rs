@@ -19,11 +19,17 @@
 //!   (issue #75).  Decouples Stellar Core frame ingestion from the operator
 //!   reconciliation loop via a bounded ring buffer with configurable
 //!   backpressure and a parallel producer-consumer worker pool.
+//! - [`crd`] — Custom resources owned by this crate, including the
+//!   [`crd::testnet::StellarTestnet`] CRD for ephemeral testnets (issue #246).
+//! - [`testnet`] — Reconciliation loop that provisions and tears down
+//!   ephemeral single-node Stellar networks from `StellarTestnet` resources.
 
 pub mod apis;
+pub mod crd;
 pub mod deployment;
 pub mod ingestion;
 pub mod quorum;
+pub mod testnet;
 pub mod webhook;
 
 /// Standard test logger initialization macro helper.
