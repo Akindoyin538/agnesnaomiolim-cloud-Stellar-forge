@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.32.0 (2026-10-25) [minor]
+
+• Merge pull request #449 from Obetaebube3/feat/wasm-module-cache
+✨ feat(wasm): add LRU compiled-module cache with background GC
+✨ feat(wasm): add LRU compiled-module cache with background GC
+
+
 ## Chart v2.31.0 (2026-10-25) [minor]
 
 • Merge pull request #481 from Devadakene/feat/host-function-fee-calibrator
