@@ -2,6 +2,9 @@
 name = "stellar-telemetry"
 version = "0.1.0"
 edition = "2021"
+
+# Standalone workspace so unit tests can run without the operator crate's private registry deps.
+[workspace]
 authors = ["Stellar K8s Contributors"]
 description = "Prometheus metrics exporter and rate-limiter proxy for Stellar nodes"
 license = "Apache-2.0"
@@ -38,8 +41,8 @@ regex = "1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 
-# Error handling
-anyhow = "1"
+# Error handling for log parser
+thiserror = "1"
 
 # Pinned to fix RUSTSEC-2026-0009
 time = "0.3.47"
@@ -61,9 +64,3 @@ harness = false
 [[bench]]
 name = "ebpf_overhead"
 harness = false
-
-[features]
-# Enable real eBPF loading via Aya-rs.
-# Requires CAP_BPF + CAP_NET_ADMIN at runtime and kernel headers at build time.
-# When this feature is absent the collector falls back to ProbeSimulator automatically.
-ebpf-runtime = []
