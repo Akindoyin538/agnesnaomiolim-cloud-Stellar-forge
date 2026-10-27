@@ -30,7 +30,14 @@
 //!   cloud storage detachment via AWS EBS / GCP PD APIs, and safely removes
 //!   orphaned finalizers without risking data loss.
 //! - [`quorum`] — Quorum-set graph analysis utilities.
-//! - [`webhook`] — Admission webhook handlers, including the
+//! - [`tls`] — Self-signed TLS certificate generation for the admission webhook.
+//! - [`wasm`] — Wasmtime module cache (LRU, metrics, eviction).
+//! - [`webhook`] — Admission webhook handlers:
+//!   - [`webhook::wasm_mutator`] — MutatingAdmissionWebhook for WASM bytecode
+//!     optimisation.
+//!   - [`webhook::wasm_runner`] — Sandboxed Wasmtime policy execution engine.
+//!   - [`webhook::admission`] — Kubernetes AdmissionReview HTTP server with
+//!     fail-open/fail-closed routing.
 
 
 pub mod apis;
@@ -39,7 +46,8 @@ pub mod deployment;
 pub mod ingestion;
 pub mod pdb;
 pub mod quorum;
-pub mod testnet;
+pub mod tls;
+pub mod wasm;
 pub mod webhook;
 
 /// Standard test logger initialization macro helper.
