@@ -40,8 +40,6 @@
 //!     fail-open/fail-closed routing.
 
 
-pub mod apis;
-pub mod crd;
 pub mod deployment;
 pub mod ingestion;
 pub mod pdb;
