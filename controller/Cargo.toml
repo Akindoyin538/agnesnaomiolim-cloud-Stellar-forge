@@ -42,13 +42,12 @@ tempfile = "3"
 
 
 
-# TLS certificate generation (self-signed, for dev/CI)
-rcgen = { version = "0.13", features = ["pem"] }
-time = "0.3"
-
 [dev-dependencies]
 tokio = { version = "1", features = ["full", "test-util"] }
 axum = { version = "0.8", features = [] }
 serde_json = "1"
 base64 = "0.21"
+# Mock HTTP server for exercising the AWS EBS / GCP PD request round-trips
+# without a live cloud. Pinned to match the version used elsewhere in the repo.
+wiremock = "=0.6.5"
 
