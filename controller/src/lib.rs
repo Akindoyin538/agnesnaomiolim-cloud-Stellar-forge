@@ -22,6 +22,9 @@
 //! - [`apis`] — Custom resource validation and API schema utilities.
 //! - [`deployment`] — StellarNode deployment pipeline, including the
 //!   [`deployment::optimizer`] WASM bytecode optimizer.
+//! - [`pdb`] — PodDisruptionBudget auto-tuning controller that keeps
+//!   `maxUnavailable` at 0 while validators sync and only relaxes it to 1
+//!   when the quorum can survive losing one validator.
 //! - [`finalizers`] — Kubernetes finalizer cleanup recovery controller.
 //!   Detects `StellarNode` resources stuck in `Terminating` state, verifies
 //!   cloud storage detachment via AWS EBS / GCP PD APIs, and safely removes
@@ -40,7 +43,8 @@
 pub mod apis;
 pub mod crd;
 pub mod deployment;
-
+pub mod ingestion;
+pub mod pdb;
 pub mod quorum;
 pub mod tls;
 pub mod wasm;
