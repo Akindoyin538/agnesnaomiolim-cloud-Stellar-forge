@@ -5,6 +5,88 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.34.0 (2026-10-27) [minor]
+
+• Merge pull request #445 from olarh0170-netizen/feat/wasm-admission-webhook-303
+✨ feat: implement WASM-based admission webhook for dynamic policy enfor…
+• Merge branch 'main' into feat/wasm-admission-webhook-303
+• Merge branch 'main' into feat/wasm-admission-webhook-303
+✨ feat: implement WASM-based admission webhook for dynamic policy enforcement
+• Closes #303
+• This PR implements a comprehensive WASM-based admission webhook system that
+• allows operators to enforce organization-specific validation policies without
+• modifying the core operator code.
+• ## Architecture
+• ### New Controller Crate Modules
+• - **controller/src/webhook/wasm_runner.rs**: Sandboxed Wasmtime execution
+•   engine with fuel metering (5M instructions), memory limits (4 MiB), and
+•   wall-clock timeout (9s) to prevent CPU/memory exhaustion attacks.
+• - **controller/src/webhook/admission.rs**: Kubernetes AdmissionReview HTTP
+•   server exposing /validate (ValidatingWebhook), /mutate
+•   (MutatingWebhook), /plugins (hot-reload API), /healthz, and /readyz
+•   endpoints with fail-open/fail-closed routing per plugin.
+• - **controller/src/tls.rs**: Self-signed TLS certificate generation using
+•   rcgen for local development and CI environments (production uses
+•   cert-manager).
+• ### Host ABI
+• Plugins export a single `validate() -> i32` function and communicate via
+• four host functions:
+• - `env::get_input_len() -> i32`
+• - `env::read_input(ptr, len) -> i32`
+• - `env::write_output(ptr, len) -> i32`
+• - `env::log_message(ptr, len)`
+• Input/output are JSON-serialized PolicyInput/PolicyOutput structs.
+• ## Security Model
+• Each plugin execution is bounded by three independent safety constraints:
+• | Constraint | Default | Purpose |
+• |------------|---------|---------|
+• | Fuel | 5,000,000 instructions | Prevents infinite loops |
+• | Memory | 4 MiB | Bounds guest heap growth |
+• | Timeout | 9 seconds | Guarantees response before K8s 10s deadline |
+• The WasmRunner creates a fresh Wasmtime Store per invocation with no shared
+• mutable state, preventing cross-request contamination and memory leaks in
+• the operator thread.
+• ## Example: Registry Policy Plugin
+• Created `examples/plugins/registry-policy/` demonstrating enforcement of
+• approved Docker registry prefixes:
+• - Allowed: docker.io/stellar/, ghcr.io/stellar/,
+•   gcr.io/stellar-project/, registry.k8s.io/stellar/
+• - Denied: any other registry prefix
+• - Warning: plain tags with no registry (relies on cluster pull policy)
+• ## Integration Tests
+• Added `controller/tests/registry_policy_test.rs` with 6 test cases:
+• 1. Deny unapproved registry
+• 2. Allow approved registry
+• 3. Allow-all plugin permits everything
+• 4. Fail-open plugin allows on error/trap
+• 5. Mutate endpoint injects policy annotation
+• 6. Full HTTP-layer AdmissionReview contract test
+• Tests use inline WAT modules to avoid requiring wasm32-unknown-unknown
+• target in CI.
+• ## Wiring
+• Updated `src/commands/webhook.rs` to initialize the controller's
+• AdmissionServer alongside the existing WebhookServer. Plugins can be
+• pre-loaded at startup via WASM_POLICY_PLUGIN_PATH environment variable.
+• Added controller crate to workspace members and root crate dependencies.
+• ## Documentation
+• Updated `docs/wasm-webhook.md` with controller-crate implementation
+• details, memory safety profile, fail-open/fail-closed semantics, and
+• deployment examples.
+• ## Testing
+• Build the registry policy plugin:
+• ```bash
+• cargo build --target wasm32-unknown-unknown --release -p registry-policy
+• ```
+• Run integration tests:
+• ```bash
+• cargo test -p controller registry_policy
+• ```
+• ## Complexity: 200 Points (High)
+• This implements the full admission webhook stack with sandboxed WASM
+• execution, dynamic plugin loading, TLS support, fail-open/fail-closed
+• routing, and comprehensive test coverage as specified in issue #303.
+
+
 ## Chart v2.33.0 (2026-10-27) [minor]
 
 • Merge pull request #441 from shychips/docs/gitops-dr-state-rollback
