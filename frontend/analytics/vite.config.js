@@ -1,9 +1,6 @@
 import { defineConfig } from 'vite';
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import { createRequire } from 'module';
-
-const require = createRequire(import.meta.url);
 
 export default defineConfig({
   plugins: [react()],
@@ -15,6 +12,7 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
         perf: path.resolve(__dirname, 'perf.html'),
       },
+      external: ['d3'],
     },
   },
   resolve: {
@@ -49,9 +47,4 @@ export default defineConfig({
       },
     },
   },
-  build: {
-    rollOptions: {
-      external: ['d3'],
-    },
-  },
-
+});

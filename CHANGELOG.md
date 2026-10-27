@@ -5,6 +5,659 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 
+## Chart v2.34.0 (2026-10-27) [minor]
+
+• Merge pull request #445 from olarh0170-netizen/feat/wasm-admission-webhook-303
+✨ feat: implement WASM-based admission webhook for dynamic policy enfor…
+• Merge branch 'main' into feat/wasm-admission-webhook-303
+• Merge branch 'main' into feat/wasm-admission-webhook-303
+✨ feat: implement WASM-based admission webhook for dynamic policy enforcement
+• Closes #303
+• This PR implements a comprehensive WASM-based admission webhook system that
+• allows operators to enforce organization-specific validation policies without
+• modifying the core operator code.
+• ## Architecture
+• ### New Controller Crate Modules
+• - **controller/src/webhook/wasm_runner.rs**: Sandboxed Wasmtime execution
+•   engine with fuel metering (5M instructions), memory limits (4 MiB), and
+•   wall-clock timeout (9s) to prevent CPU/memory exhaustion attacks.
+• - **controller/src/webhook/admission.rs**: Kubernetes AdmissionReview HTTP
+•   server exposing /validate (ValidatingWebhook), /mutate
+•   (MutatingWebhook), /plugins (hot-reload API), /healthz, and /readyz
+•   endpoints with fail-open/fail-closed routing per plugin.
+• - **controller/src/tls.rs**: Self-signed TLS certificate generation using
+•   rcgen for local development and CI environments (production uses
+•   cert-manager).
+• ### Host ABI
+• Plugins export a single `validate() -> i32` function and communicate via
+• four host functions:
+• - `env::get_input_len() -> i32`
+• - `env::read_input(ptr, len) -> i32`
+• - `env::write_output(ptr, len) -> i32`
+• - `env::log_message(ptr, len)`
+• Input/output are JSON-serialized PolicyInput/PolicyOutput structs.
+• ## Security Model
+• Each plugin execution is bounded by three independent safety constraints:
+• | Constraint | Default | Purpose |
+• |------------|---------|---------|
+• | Fuel | 5,000,000 instructions | Prevents infinite loops |
+• | Memory | 4 MiB | Bounds guest heap growth |
+• | Timeout | 9 seconds | Guarantees response before K8s 10s deadline |
+• The WasmRunner creates a fresh Wasmtime Store per invocation with no shared
+• mutable state, preventing cross-request contamination and memory leaks in
+• the operator thread.
+• ## Example: Registry Policy Plugin
+• Created `examples/plugins/registry-policy/` demonstrating enforcement of
+• approved Docker registry prefixes:
+• - Allowed: docker.io/stellar/, ghcr.io/stellar/,
+•   gcr.io/stellar-project/, registry.k8s.io/stellar/
+• - Denied: any other registry prefix
+• - Warning: plain tags with no registry (relies on cluster pull policy)
+• ## Integration Tests
+• Added `controller/tests/registry_policy_test.rs` with 6 test cases:
+• 1. Deny unapproved registry
+• 2. Allow approved registry
+• 3. Allow-all plugin permits everything
+• 4. Fail-open plugin allows on error/trap
+• 5. Mutate endpoint injects policy annotation
+• 6. Full HTTP-layer AdmissionReview contract test
+• Tests use inline WAT modules to avoid requiring wasm32-unknown-unknown
+• target in CI.
+• ## Wiring
+• Updated `src/commands/webhook.rs` to initialize the controller's
+• AdmissionServer alongside the existing WebhookServer. Plugins can be
+• pre-loaded at startup via WASM_POLICY_PLUGIN_PATH environment variable.
+• Added controller crate to workspace members and root crate dependencies.
+• ## Documentation
+• Updated `docs/wasm-webhook.md` with controller-crate implementation
+• details, memory safety profile, fail-open/fail-closed semantics, and
+• deployment examples.
+• ## Testing
+• Build the registry policy plugin:
+• ```bash
+• cargo build --target wasm32-unknown-unknown --release -p registry-policy
+• ```
+• Run integration tests:
+• ```bash
+• cargo test -p controller registry_policy
+• ```
+• ## Complexity: 200 Points (High)
+• This implements the full admission webhook stack with sandboxed WASM
+• execution, dynamic plugin loading, TLS support, fail-open/fail-closed
+• routing, and comprehensive test coverage as specified in issue #303.
+
+
+## Chart v2.33.0 (2026-10-27) [minor]
+
+• Merge pull request #441 from shychips/docs/gitops-dr-state-rollback
+📝 docs(operations): GitOps DR state rollback runbook and etcd snapshot script
+• Merge branch 'main' into docs/gitops-dr-state-rollback
+• Merge pull request #439 from Chidi-Dev1/feat/ebpf-network-telemetry-collector
+✨ feat(telemetry): eBPF-based low-overhead network telemetry collector
+• Merge pull request #483 from Princeadim/feat/fuzz-testing-guide-324
+📝 docs(fuzz): operator state verification and fuzz testing guide (#324)
+• Merge branch 'main' into feat/fuzz-testing-guide-324
+• Merge pull request #536 from Calebstack/feat/pdb-auto-tuning-controller-474
+✨ feat(controller): add PDB auto-tuning controller for validator HA
+• Merge branch 'main' into feat/ebpf-network-telemetry-collector
+🐛 fix: resolve merge conflicts with base
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/auth_tree/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/topology/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+• Merge branch 'main' into docs/gitops-dr-state-rollback
+• Merge pull request #440 from Chidi-Dev1/drips/39
+• Add PDB auto-tuning controller gated on node sync health and cluster quorum
+• Merge branch 'main' into drips/39
+• Merge pull request #438 from Okorie2000-code/docs/bare-metal-249-validation
+📝 docs(bare-metal): comprehensive bare-metal K8s bootstrap guide for Stellar
+✨ feat(controller): add PDB auto-tuning controller for validator HA
+📝 ci(stale-docs): skip doc-check when binary was not built
+📝 docs(fuzz): add operator state verification and fuzz testing guide (#324)
+• - Add docs/development/fuzz-testing.md with comprehensive guide covering:
+•   - proptest/kube-rs harness setup for StellarNode architecture
+•   - Invariant matrix (I-1 through I-10) for state verification assertions
+•   - Differentiation between webhook rejections and internal operator panics
+•   - Bug injection procedure to validate the harness catches regressions
+•   - Large-scale random YAML generation instructions
+•   - CI integration and environment variable reference
+• - Add tests/fuzz/crd_mutations.rs property-based test harness covering:
+•   - I-1: spec.validate() never panics on any generated input
+•   - I-2: retentionPolicy:Delete is preserved through validation
+•   - I-3: Validator without validatorConfig returns error
+•   - I-4: Horizon without horizonConfig returns error
+•   - I-5: SorobanRpc without sorobanConfig returns error
+•   - I-6: Validator replicas != 1 returns error
+•   - I-7: Custom network without passphrase returns error
+•   - I-8: Multi-step mutation sequences converge without panic
+•   - I-9: All validation errors carry non-empty how_to_fix hints
+•   - I-10: Swapping nodeType mid-stream is safe
+•   - 10 deterministic unit tests for fast regression coverage
+• - Update Cargo.toml with [[test]] entry for crd_mutations
+•   (proptest 1.5 was already present as a dev-dependency)
+• Closes #324
+🐛 fix(build): repair dependency graph for doc-check
+• - Remove hallucinated color-eye dependency (no such crate on crates.io)
+• - Restore base64 dependency removed while still used across src
+• - Rename invalid [server-dependencies] back to [build-dependencies]
+• - Declare walkdir as a regular dependency (used by src/bin/doc_check.rs)
+• - Add [[bin]] doc-check target (workflow/tooling expect the hyphenated name)
+• - Refresh Cargo.lock for stellar-telemetry/p2p-firewall workspace members
+📝 docs(operations): add GitOps DR state rollback runbook and etcd snapshot script
+✨ feat(controller): add auto-tuning PodDisruptionBudget controller for StellarNode sync health
+• Closes #39
+✨ feat(telemetry): implement eBPF-based low-overhead network telemetry collector
+• Implements Issue #17 — eBPF-based Low-Overhead Network Telemetry Collector.
+• ## What this PR does
+• Adds a complete eBPF network telemetry subsystem to the stellar-telemetry
+• crate that monitors ingress/egress TCP connections to Stellar Core pods at
+• the socket level, with negligible CPU overhead (<1% target).
+• ### New modules (telemetry/src/ebpf/)
+• **probe.rs**
+• - Defines ConnEvent, Direction, DropReason shared between kernel and userspace
+• - ProbeHandle trait — common interface for both native and simulation backends
+• - ProbeSimulator — pure-Rust simulation of eBPF traffic (no kernel deps)
+• - native::AyaProbe — gated behind ebpf-runtime feature; attempts real TC
+•   classifier attachment via Aya-rs, falls back gracefully on privilege failure
+• **collector.rs**
+• - EbpfCollector — main orchestrator: loads probe, runs poll loop, maps IPs
+• - IP-to-pod mapping via PodMap (refreshed from STELLAR_POD_IP_MAP env var
+•   or Kubernetes API when running in-cluster)
+• - Graceful fallback: try_native=true attempts real eBPF; on any failure
+•   (missing CAP_BPF, kernel too old, no headers) silently uses simulation
+• - Fully async poll loop; 100 ms interval stays within <1% CPU budget
+• - 11 unit tests: simulation init, pod map resolution, packet-loss simulation,
+•   connection reset recording, egress events, env var pod map parsing
+• **metrics.rs**
+• - 8 Prometheus metrics via prometheus-client 0.22:
+•   - stellar_ebpf_connections_total  (counter, direction/pod/namespace)
+•   - stellar_ebpf_bytes_total        (counter, direction/pod/namespace)
+•   - stellar_ebpf_packets_dropped_total (counter, pod/namespace/reason)
+•   - stellar_ebpf_latency_us         (histogram, direction/pod/namespace)
+•   - stellar_ebpf_connection_resets_total (counter, pod/namespace)
+•   - stellar_ebpf_probe_mode         (gauge: 1=native, 0=simulation)
+•   - stellar_ebpf_poll_duration_us   (histogram, overhead tracking)
+•   - stellar_ebpf_events_per_poll    (histogram, batch size tracking)
+• - 5 unit tests covering registration, counter increments, histograms
+• ### Performance benchmark (telemetry/benches/ebpf_overhead.rs)
+• Proves <1% CPU overhead via criterion benchmarks:
+• - bench_record_events: 100/500/1000/5000 events at peak Stellar throughput
+• - bench_full_poll_cycle: end-to-end poll + record timing
+• - bench_simulator_throughput: raw simulator event generation (1000 polls)
+• Processing 5,000 events completes in <50 ms on a single core, confirming
+• the collector consumes <1% CPU at peak load with 100 ms poll intervals.
+• ### Deployment (deploy/ebpf-telemetry-daemonset.yaml)
+• DaemonSet manifest with full kernel privilege documentation:
+• - Required capabilities: CAP_BPF, CAP_NET_ADMIN, CAP_SYS_RESOURCE, CAP_PERFMON
+• - Runs as non-root (UID 65532), read-only root filesystem
+• - seccomp RuntimeDefault profile
+• - Drops ALL caps, adds only the 4 required above
+• - Resource limits: 5m CPU request, 50m limit (enforces <1% overhead)
+• - Includes ServiceAccount, ClusterRole (pods/nodes list/watch), Service
+• ### Helm chart (charts/stellar-operator/values.yaml)
+• New ebpfTelemetry section:
+• - enabled: false (opt-in)
+• - Configurable: interface, stellarPort, pollIntervalMs, simulate, resources
+• - ServiceMonitor sub-config for Prometheus Operator integration
+• ## Definition of Done checklist
+• - [x] Probe compiles and loads (simulation fallback when no kernel privileges)
+• - [x] IP-to-pod mapping implemented (env var + Kubernetes API path)
+• - [x] Prometheus metrics exposed without crashing the node
+• - [x] Performance benchmark proves <1% CPU overhead
+• - [x] Tests cover high-packet-loss simulation and graceful fallback
+• - [x] Deployment manifest documents required kernel privileges
+• - [x] 16/16 unit tests pass
+• Closes #17
+📝 docs(bare-metal): comprehensive bare-metal K8s bootstrap guide for Stellar
+• Implements the full Documentation issue #249 — a tested, cloud-free path for
+• running Stellar-K8s on physical hardware using Talos Linux or kubeadm, with
+• local NVMe drives attached directly to StellarNode StatefulSets.
+• ## Key files
+• - docs/infrastructure/bare-metal.md (1 361 lines, 46 sections)
+•   - §1   Reference hardware topology (3-node control-plane + archive workers)
+•   - §2   Prerequisites: firmware, storage, software (talosctl, kubeadm, helm)
+•   - §3   Path A — Talos Linux: secrets, machine config, disk/kernel tuning,
+•           bonded VLAN fabric (802.3ad LACP), CNI (Cilium or Calico)
+•   - §4   Path B — kubeadm: OS prep, containerd, bond/netplan, kubeadm init
+•   - §5   Physical network topology: VLAN segmentation (OOB/K8s/SCP/storage),
+•           bonding modes, BGP for SCP via MetalLB + BFD, jumbo frames
+•   - §6   Local storage provisioning: static local PVs, Local Path Provisioner,
+•           OpenEBS Local PV; explicit warning against cloud StorageClasses
+•   - §7   Deploy Stellar-K8s: operator install, validator + archive StellarNode
+•           examples with retentionPolicy: Retain
+•   - §8   Cluster validation: storage, network, Stellar node health, failure drills
+•   - §9   VM validation harness reference
+•   - §10  Production checklist (storage / network / Kubernetes / operations)
+•   - Appendix A: common bare-metal failure modes and fixes
+•   - Appendix B: reference manifest index
+• - examples/bare-metal/storage-class.yaml
+•   Three cloud-free StorageClasses: static local NVMe (validators), Local Path
+•   Provisioner (archives/dev), OpenEBS Local PV Hostpath (larger fleets). All
+•   use WaitForFirstConsumer and Retain; none reference a cloud CSI driver.
+•   Reformatted install comment to stay within the 120-char line limit.
+• - examples/bare-metal/validator-baremetal.yaml (pre-existing, referenced)
+•   StellarNode validator pinned to a physical NVMe via static local PV.
+• - examples/bare-metal/network-attachment.yaml (pre-existing, referenced)
+•   Default-deny NetworkPolicy for the stellar namespace, MetalLB IPAddressPools,
+•   and BGPAdvertisement for the SCP VLAN.
+• - examples/bare-metal/scripts/validate-vm-cluster.sh (pre-existing, referenced)
+•   VM harness proving local-disk volume provisioning end to end in a kind cluster.
+• - docs/performance/bare-metal-iops.md
+•   Added back-link to the bootstrap guide so the two documents cross-reference
+•   each other for readers arriving from either direction.
+• - doc-coverage.toml
+•   Registered docs/infrastructure/bare-metal.md against examples/bare-metal/**
+•   for the doc-coverage gate.
+• ## Constraints satisfied
+• - Zero cloud provider dependencies: no ebs.csi.aws.com, pd.csi.storage.gke.io,
+•   disk.csi.azure.com, no cloud load-balancer annotations, no managed DNS.
+•   External access is MetalLB (L2 or BGP).
+• - StorageClasses: kubernetes.io/no-provisioner, rancher.io/local-path,
+•   openebs.io/local only.
+• - Validation: validate-vm-cluster.sh exercises the full storage contract
+•   (provision → write → restart → read → assert node-local + Retain policy).
+• Closes #249
+
+
+## Chart v2.32.0 (2026-10-25) [minor]
+
+• Merge pull request #449 from Obetaebube3/feat/wasm-module-cache
+✨ feat(wasm): add LRU compiled-module cache with background GC
+✨ feat(wasm): add LRU compiled-module cache with background GC
+
+
+## Chart v2.31.0 (2026-10-25) [minor]
+
+• Merge pull request #481 from Devadakene/feat/host-function-fee-calibrator
+✨ feat(telemetry): add Soroban host function calibrator and fee exporter sidecar
+• Merge branch 'main' into feat/host-function-fee-calibrator
+✨ feat(telemetry): add Soroban host function calibrator and fee exporter sidecar
+
+
+## Chart v2.30.0 (2026-10-25) [minor]
+
+• Merge pull request #511 from jerrzxy/feat/issue-286-enhancement-gitops-deployment-engine-for
+✨ feat: add GitOps sync engine with health-check rollback for Stellar clusters
+• Merge branch 'main' into feat/issue-286-enhancement-gitops-deployment-engine-for
+• Merge pull request #437 from Ukorstack/feat/finalizer-cleanup-recovery-controller-46
+✨ feat(controller): Kubernetes finalizer cleanup recovery controller fo…
+• Merge branch 'main' into feat/finalizer-cleanup-recovery-controller-46
+🐛 fix: resolve merge conflicts with base
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+✨ feat: ## [Enhancement] GitOps Deployment Engine for Stellar Cluste (#286)
+✨ feat(controller): Kubernetes finalizer cleanup recovery controller for orphaned volumes
+• Implement a background garbage-collection reconciler that safely resolves
+• StellarNode resources permanently stuck in the Terminating state due to
+• controller process interruptions (crash, OOM kill, rolling upgrade, node
+• failure).
+• ## Problem
+• When the controller is killed between setting deletionTimestamp and removing
+• the finalizer 'stellarnode.stellar.org/finalizer', the resource stays
+• Terminating forever. Manual intervention was required, risking data leaks
+• if the finalizer was stripped before the volume detached.
+• ## Solution
+• Three new files under controller/src/finalizers/:
+• ### cloud_verify.rs — CloudVolumeVerifier trait + AWS/GCP implementations
+• - CloudVolumeVerifier async trait: is_volume_detached(volume_id, region) -> bool
+• - AwsEbsVerifier: calls EC2 DescribeVolumes API, parses XML attachmentSet
+• - GcpPdVerifier: calls Compute Engine disks.get, inspects 'users' field
+•   (404 → already cleaned up → safe; non-empty users → still attached)
+• - MockCloudVerifier: deterministic test double (detached/attached/error)
+• - verifier_for_provider() factory: dispatches on stellar.org/cloud-provider
+• - UnknownProviderVerifier: safe-by-default, always returns false
+• ### cleanup.rs — FinalizerCleanupReconciler
+• - KubeClient async trait: list_terminating_nodes / remove_finalizer
+• - MockKubeClient: in-memory test double tracking removed finalizers
+• - FinalizerCleanupReconciler::run_once(): detect → verify → patch loop
+• - FinalizerCleanupReconciler::run(): infinite background loop (30s default)
+• - ReconcileOutcome enum: FinalizerRemoved | VolumeStillAttached |
+•   VerificationError | NoFinalizerPresent
+• - build_finalizer_remove_patch() / strip_stellar_finalizer() helpers
+• ### mod.rs — module declaration and safety docs
+• ## Safety Invariant
+• A finalizer is NEVER removed unless CloudVolumeVerifier::is_volume_detached
+• returns Ok(true). Any error or Ok(false) causes a retry next cycle.
+• This prevents cloud data leaks or filesystem corruption on large validator
+• volumes (tested with simulated 500 GiB validator crash-recovery scenario).
+• ## Tests
+• 23 unit tests across cloud_verify.rs and cleanup.rs:
+• - AWS XML parser: attached/attaching blocked; detached/empty allowed
+• - Mock verifier: detached/attached/error paths
+• - Input validation: invalid vol- prefix, short volume ID, empty disk name
+• - Factory function: correct verifier dispatch + unknown provider safety
+• - Happy path: finalizer removed end-to-end
+• - Safety: no removal when volume still attached
+• - Safety: no removal on cloud API error
+• - Safety: no removal on Kubernetes patch failure
+• - Crash-recovery simulation: two-pass scenario (attached → detached)
+• - Patch helpers: strip_stellar_finalizer idempotency, JSON correctness
+• ## Other Changes
+• - controller/Cargo.toml: add async-trait = "0.1" dependency
+• - controller/src/lib.rs: expose pub mod finalizers
+• - docs/finalizer-cleanup-recovery.md: architectural note with safety
+•   verification steps, crash-recovery validation, test coverage table,
+•   cloud provider annotation reference, operator integration example
+• Closes #46
+
+
+## Chart v2.29.0 (2026-10-25) [minor]
+
+• Merge pull request #482 from Devadakene/feat/heaptrack-profiling
+✨ feat(profiling): integrate jemalloc heaptrack profiling endpoints and memory leak alerts
+• Merge pull request #491 from Ukorstack/feat/multi-region-gateway-fallback-83
+✨ feat(gateway): Multi-Region Soroban RPC Router with Failover (#83)
+• Merge pull request #490 from Princeadim/feat/cdp-engine-#217
+✨ feat(contracts): CDP Manager Engine (#217)
+• Merge pull request #513 from odunfemisamuel-maker/main
+• Enhance trace replay UI for Soroban transaction debugging
+• Merge pull request #515 from StephenMero/feat/security-hardening-manual
+✨ feat(security): add security hardening manual with RBAC, secrets, and…
+• Merge pull request #516 from CodeNinjaStephen/feat/royalty-splitter-distribution-engine
+📝 docs(royalty-splitter): add TESTING.md with full test coverage guide
+• Merge pull request #517 from Okorie2000-code/drips/116
+• Add dynamic node topology spread constraint enforcer
+• Merge pull request #518 from mathstickz/feat/Cross-Chain
+✨ feat:implement Cross-Chain NFT (ERC-721 to Soroban) Bridge Vault
+• Merge pull request #519 from Kingsuite/feat/trimming
+• Feat/trimming
+• Merge pull request #520 from Ukorstack/drips/67
+• Add bridge-relayer contract with threshold attestation verification and replay protection
+• Merge pull request #521 from dayor2746-creator/feat/pol-treasury-bonding-curve
+✨ feat(contracts): add POL Treasury Manager with bonding curve, vesting…
+• Merge branch 'main' into drips/116
+• Merge pull request #1 from odunfemisamuel-maker/feat/issue-229-react-window
+✨ feat: Smart Contract Auth Hierarchy Builder (issue #228)
+✨ feat(contracts): add POL Treasury Manager with bonding curve, vesting, and reserve ratio
+• Implements the Protocol Owned Liquidity (POL) Treasury Manager as a
+• standalone Soroban contract workspace under contracts/pol-treasury/.
+• ## Modules
+• ### bond.rs — Bonding Curve
+• - Linear discount decay: discount_bps = MAX_DISCOUNT_BPS - (reserve * MAX_DISCOUNT_BPS / MAX_RESERVE_TARGET)
+• - All arithmetic uses i128 fixed-point BPS math (no floats)
+• - Discount capped at 5 000 BPS (50 %) to prevent unlimited dilution
+• - compute_payout() validated linear in reserve_in via property tests
+• ### vesting.rs — Time-locked Vesting
+• - Per-bonder cliff + linear vesting schedules in persistent storage
+• - cliff_ledgers enforces zero tokens before the cliff
+• - Monotone-non-decreasing claimable amount guaranteed by invariant tests
+• - Accumulates additional bonds onto existing schedules
+• ### reserve.rs — Reserve Ratio Enforcement
+• - Dynamic backing_ratio_bps = reserve_val * 10_000 / supply_val
+• - Pre-bond ratio check rejects bonds that breach min_ratio_bps
+• - ratio = u32::MAX when supply = 0 (no dilution risk)
+• ### lib.rs — PolTreasury Contract
+• - initialize(): sets up all three subsystems atomically
+• - bond(): bonding curve → ratio check → token transfer → vesting schedule
+• - claim(): transfers vested tokens from treasury to beneficiary
+• - Query entry-points: bond_state(), vesting_schedule(), reserve_state()
+• - Events: TreasuryInitialized, Bonded, Claimed (contractevent derive)
+• ## Test Coverage
+• 26 property tests across all four files validating:
+• - Discount monotone-decreasing as reserves grow
+• - Discount = 0 at max_reserve_target (1 000 bond convergence test)
+• - Payout linear in reserve_in
+• - Vesting claimable never decreases over time
+• - Zero claimable before cliff
+• - Full claimable after vesting duration
+• - Reserve ratio 100 % when balanced, 0 when empty
+• - Under-backed bond detection
+• Closes #238
+✨ feat(bridge-relayer): add threshold multi-sig relayer contract with nonce replay protection and dispatcher
+• Closes #67
+✨ feat: Oracles Aggregator with Medianiser & Outlier Trimming
+✨ feat:implement Decentralised Oracles Aggregator with Medianiser & Outlier Trimming
+✨ feat:implement Cross-Chain NFT (ERC-721 to Soroban) Bridge Vault
+✨ feat(controller): add dynamic node topology spread constraint enforcer
+• Closes #116
+📝 docs(royalty-splitter): add TESTING.md with full test coverage guide
+• Documents all 12 tests (5 unit + 7 integration), the dust-free
+• conservation invariant, the 33.333%/33.333%/33.334% specification
+• scenario, the multi-sig reconfiguration gate, and the precision model
+• used by compute_allocation.
+• Closes the distribution engine implementation task.
+✨ feat(security): add security hardening manual with RBAC, secrets, and NetworkPolicies
+• - docs/security/README.md: top-level security index with quick-start
+•   checklist, threat model table, and links to all example manifests
+• - docs/security/secrets-management.md: deployable configurations for
+•   HashiCorp Vault (Agent Injector + ESO), AWS Secrets Manager (IRSA),
+•   and GCP Secret Manager (Workload Identity); includes rotation
+•   procedures, etcd encryption guidance, and audit log verification
+• - docs/security/network-policies.md: full NetworkPolicy reference for
+•   validator P2P isolation, Horizon/Soroban trusted-ingress, operator
+•   egress, monitoring scrape, and automated verification script
+• - examples/security/strict-rbac.yaml: fill previously empty file with
+•   14-document least-privilege profile (SA, Roles, ClusterRoles, PSS
+•   Namespace labels, workload SA); no wildcards, no Secret writes
+• - examples/security/network-policy.yaml: 10 deployable NetworkPolicies
+•   (default-deny x2, DNS egress, validator, Horizon, Soroban RPC,
+•   operator, Prometheus scrape)
+• - examples/security/externalsecret-aws.yaml: complete IRSA-based ESO
+•   SecretStore + ExternalSecret for AWS Secrets Manager
+• - examples/security/externalsecret-vault.yaml: complete Vault Kubernetes
+•   auth ESO SecretStore + ExternalSecret
+• Closes #security-hardening
+✨ feat(gateway): multi-region Soroban RPC router with failover (#83)
+• Implement a production-grade multi-region gateway proxy that routes
+• Soroban JSON-RPC traffic to the best available cluster based on health,
+• ledger alignment, and latency — with automatic failover and circuit
+• breaker isolation.
+• ## Key modules
+• ### gateway/src/health.rs
+• - ClusterHealthMonitor: background per-cluster probe loops via
+•   Soroban RPC getHealth JSON-RPC call
+• - BreakerState_ state machine: Closed → Open → HalfOpen with
+•   configurable failure_threshold / success_threshold / open_window
+• - ClusterHealth enum: Healthy / Degraded / Desynced / Unhealthy
+• - Ledger-sequence alignment: lag > max_lag_ledgers → Desynced
+• - HealthSnapshot: lock-free Arc read on the hot path (<2ms constraint)
+• - DbCorruption probe error: immediately isolates cluster on detection
+• ### gateway/src/router.rs
+• - MultiRegionRouter: routing decisions driven by pre-computed snapshot
+• - Write strategy: primary first; failover to highest-ledger secondary
+•   when primary is desynced or circuit breaker is open
+• - Read strategy: lowest-latency synced cluster (Desynced excluded to
+•   prevent serving stale ledger data)
+• - simulateTransaction classified as read (sandbox, no state commit)
+• - Unknown methods treated as writes for safety
+• - AtomicRouterMetrics: lock-free counters (no mutex on hot path)
+• ### src/bin/soroban-gateway-proxy.rs
+• - Axum HTTP proxy binary: POST / → upstream JSON-RPC forward
+• - GET /healthz, /readyz, /metrics endpoints
+• - Full CLI with env-var overrides (GATEWAY_LISTEN, GATEWAY_CLUSTERS…)
+• - x-routed-cluster / x-route-eval-us observability headers
+• ### Cargo.toml
+• - Added [[bin]] soroban-gateway-proxy (required-features = rest-api)
+• ## tests/gateway_load_test.rs (17 tests)
+• Validates all Definition of Done criteria:
+• - 10k reads all route to lowest-latency cluster
+• - 10k writes all route to healthy primary
+• - 50 concurrent tasks × 200 requests each (no races)
+• - 10-ledger sync delay: primary desynced → instant failover to secondary
+• - Boundary: lag == threshold → still healthy; lag > threshold → failover
+• - Sub-2ms route eval: 1000 requests (5 clusters) and 500 (10 clusters)
+• - Circuit breaker: open breaker blocks both reads and writes
+• - Mixed 10k read/write load; metrics counters exact
+• - Dynamic lifecycle: healthy → desynced → recovered
+• - Stress: 100k requests, 100 concurrent tasks, zero errors
+• - Degraded fallback enabled/disabled behavior
+• - Metrics accuracy across 250+ mixed requests
+• ## Design constraints met
+• - Health evaluation overhead < 2ms: snapshot is an Arc clone, no I/O
+• - 10-ledger lag detection: ClusterHealth::Desynced triggers immediately
+•   on next snapshot rebuild (within one probe_interval)
+• - Circuit breaker: clusters with db corruption or repeated failures
+•   isolated until open_window elapses and half-open trial succeeds
+• Closes #83
+✨ feat(contracts): add CDP Manager Engine (#217)
+• Implements a Collateralized Debt Position engine as a standalone
+• Soroban smart contract (contracts/cdp-engine/).
+• Key modules
+• -----------
+• - src/lib.rs        — vault state, deposit/withdraw collateral,
+•                       borrow/repay with CR enforcement, admin functions
+• - src/liquidate.rs  — keeper liquidation with discount seizure and
+•                       bad-debt isolation into ReserveBadDebt reserve
+• - src/tests.rs      — ~35 tests covering all flows and edge cases
+• Design highlights
+• -----------------
+• * VaultState {collateral, debt} in persistent storage per user address
+• * Minimum CR (bps) enforced on borrow and withdrawal
+• * Liquidation threshold (bps) strictly below min CR
+• * Seizure formula: debt_covered × (10000 + discount_bps) / 10000
+• * Insolvent vaults: all collateral seized, remaining debt moved to
+•   ReserveBadDebt counter, vault zeroed — bad debt isolated
+• * All CR arithmetic via u128 intermediates — no overflow possible
+• * Cross-contract oracle call: oracle.get_price() → i128 (PRICE_PRECISION)
+• * soroban-sdk 27.0.6, Apache-2.0 license
+• Closes #217
+✨ feat(profiling): integrate jemalloc heaptrack profiling endpoints and memory leak alerts
+
+
+## Chart v2.28.0 (2026-10-25) [minor]
+
+• Merge pull request #539 from odunfemisamuel-maker/feat/vault-secret-injector
+✨ feat(webhook): add Vault secret injector for validator seeds via tmpfs (#224)
+• Merge branch 'main' into feat/vault-secret-injector
+• Merge pull request #571 from xion-19/feat/cross-shard-route-invariant-verifier-467
+• [ISSUE_467] feat(contracts): add route minimum output verifier and active lock inspection
+• Merge pull request #572 from olaayoade91-byte/drips/553
+• Show full text on hover for truncated cells in StorageTimelineDashboard
+• Merge branch 'main' into drips/553
+• Merge pull request #577 from Opulencechuks/docs/docker-socket-permission-troubleshooting
+📝 docs(local-dev): add troubleshooting note for docker socket permission errors
+• Merge pull request #578 from islarmeeyah-cyber/feat/issue-476-contract-multi-collateral-stablecoin-debt
+✨ feat: add multi-collateral stablecoin debt ceiling controller
+• Merge branch 'main' into feat/issue-476-contract-multi-collateral-stablecoin-debt
+• Merge pull request #583 from Opulencechuks/docs/helm-upgrades-guide
+📝 docs(operations): add helm upgrades guide with verified anchor slug links
+• Merge pull request #635 from Joyful12-tech/devin/1792886841-stellar-testnet-crd
+✨ feat(controller): StellarTestnet CRD and ephemeral testnet operator
+• Merge pull request #636 from oscarj007/feature/453-flash-loan-primitive
+• scaffold: setup flash loan module structure for issue #453
+• Merge pull request #637 from devogechukwu/fix/worker-init-tracing-level
+🐛 fix(controller): update tracing log level to info on worker initialization
+🐛 fix(controller): update tracing log level to info on worker initialization
+• scaffold: setup flash loan module structure for issue #453
+✨ feat(controller): StellarTestnet CRD and ephemeral testnet operator
+• Add a namespaced StellarTestnet custom resource (stellar.org/v1alpha1) and a stellar-testnet-operator binary that provisions a single-node standalone Stellar network (quickstart, Core + Soroban RPC) on memory-backed storage, creates <name>-rpc / <name>-core Services and an optional Ingress, funds deterministic test accounts through friendbot and publishes connection URLs, passphrase and keypairs in status. Owner references plus a finalizer guarantee full teardown on deletion; ttlSecondsAfterReady self-deletes.
+• genesis.protocolVersion pins the ledger protocol, needed because the current quickstart image defaults to protocol 28 while its RPC only simulates on 29/30.
+• scripts/test-ephemeral-testnet.sh validates Ready + funded within 30s, probes getHealth/getNetwork, deploys and exercises royalty-splitter, and verifies garbage collection. A dedicated workflow covers the controller crate (tests, build, CRD drift, shellcheck).
+• Closes #246
+• Signed-off-by: Prudence John <joyonyegbuna2020@gmail.com>
+• Co-Authored-By: Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>
+• Merge pull request #573 from olaayoade91-byte/drips/541-548-550
+• Cleanup unused imports and implement Error trait for controller errors
+• Merge branch 'main' into drips/541-548-550
+• Merge pull request #574 from Joshua13-stack/simple/562
+• Fix: ## [Docs] Add Troubleshooting Note for Rust Target Add Command
+• Merge pull request #575 from Opulencechuks/fix/init-test-logger-macro
+✨ feat(controller): add standard test logger initialization macro helper
+• Merge pull request #576 from Opulencechuks/fix/readme-codeblock-syntax-tags
+📝 docs(readme): add yaml language tag to soroban metrics codeblock
+• Merge pull request #580 from Waseyi/feat/issue-466-contract-decentralized-autonomous-orderbook
+✨ feat: on-chain limit orderbook engine with price-time priority
+🐛 fix: resolve merge conflicts with base
+🐛 fix: resolve merge conflicts with base
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+✨ feat: ## [Contract] Decentralized Autonomous Orderbook (Limit Orde (#466)
+✨ feat: ## [Contract] Multi-Collateral Stablecoin Debt Ceiling Contr (#476)
+📝 docs(operations): add helm upgrades guide with verified anchor slug links
+📝 docs(local-dev): add troubleshooting note for docker socket permission errors
+📝 docs(readme): add yaml language tag to soroban metrics codeblock
+✨ feat(controller): add standard test logger initialization macro helper
+• simple: fix #562
+• Co-authored-by: Simple Agent <agent@simple.dev>
+🐛 fix: #550 ## [Frontend] Clean Up Unused React Hook Imports
+• Closes #550
+🐛 fix: #548 ## [Backend] Ensure Error Enum Implements Standard Error Trait
+• Closes #548
+🐛 fix: #541 ## [Frontend] Clean Up Unused CSS Modules Import
+• Closes #541
+• Add title tooltips to truncated cells in StorageTimelineDashboard
+• Closes #553
+✨ feat(contracts): add route minimum output verifier and active lock inspection
+• Adds aggregate route minimum output verification (verify_route_minimum_out)
+• and active cross-shard advisory lock inspection (count_active_locks) to
+• contracts/cross-shard.
+• Closes #467
+• ### Summary
+• - Add `verify_route_minimum_out` to coordinator.rs: validates that the
+•   final leg output of a multi-shard swap meets the caller's aggregate
+•   route minimum, returning SlippageExceeded if not.
+• - Add `count_active_locks` to locks.rs: counts how many pools in a given
+•   list currently hold active, non-expired advisory locks.
+• - Fix coordinator's execute_leg to use try_invoke_contract instead of
+•   invoke_contract, allowing proper error handling from AMM contracts.
+• - Update tests to work with soroban-sdk 22.0.0's API (try_execute_atomic_swap,
+•   nested Result handling, env.as_contract for storage access).
+• - Pin soroban-sdk to exact version =22.0.0 and pin ed25519-dalek to <3.0.0
+•   to resolve Rust 1.99.1 compatibility issues.
+• Payout Wallet: 0x9332620f242e88B722d714aA6d96859b9F77399D
+• 🤖 Generated with Codebuff
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+✨ feat(webhook): add Vault secret injector for validator seeds via tmpfs (#224)
+• Implements a Kubernetes Mutating Admission Webhook (/mutate/vault) that
+• intercepts Stellar Core pod creations and injects:
+• - a vault-seed-init container that authenticates with Vault using the
+•   Kubernetes service-account auth method, fetches the validator seed
+•   from KV v2, and renders stellar-core.cfg;
+• - a memory-only emptyDir volume (medium: Memory) delivering the config,
+•   so the plaintext seed never reaches etcd, Kubernetes Secrets, persistent
+•   disk, or container environment variables;
+• - a read-only mount into the stellar-core container.
+• Key modules: controller/src/webhook/vault_injector.rs (patch builder +
+• fail-open admission handler with etcd safety verifier) and
+• controller/src/webhook/auth.rs (Vault Kubernetes-auth client with
+• in-memory, zeroized token cache and renewal).
+• The PR also ships:
+• - MutatingWebhookConfiguration template (charts/vault-injector) gated on
+•   webhook.enabled + vaultInjector.enabled, annotation-objectSelector opt-in;
+• - an integration test suite (controller/tests/vault_injection_integration.rs)
+•   spinning up an in-process mock Vault validating the full auth+injection
+•   lifecycle and the security invariants;
+• - docs/security/vault-webhook-injection.md + mkdocs nav + examples and a
+•   rollout/verification runbook.
+• Drive-by fixes required to validate the chart render (pre-existing on main):
+• missing default values blocks (webhook.certManager, monitoring, scpAnalytics,
+• gitopsSecrets, horizonHpa, otel.collector, security.egressShaper, watcher
+• key rename) and two template typos (toYAml/nIndent) that made helm lint fail.
+• Complexity: High (200 Points)
+• Signed-off-by: Biggy <odunfemisamuel@gmail.com>
+• Co-Authored-By: Codebuff <noreply@codebuff.com>
+• 🤖 Generated with Codebuff
+
+
+## Chart v2.27.0 (2026-10-24) [minor]
+
+• Merge pull request #579 from TeeGeason05/fix/issue-468-backend-dynamic-kafka-partitioning-for-scp
+✨ feat: dynamic Kafka partitioning for SCP analytics engine
+• Merge branch 'main' into fix/issue-468-backend-dynamic-kafka-partitioning-for-scp
+• Merge pull request #581 from Anxy-dev4/fix/issue-478-documentation-wasm-plugin-development-and
+📝 docs: add Wasm plugin API reference and hello-world tutorial
+• Merge pull request #582 from Babigdk/test/issue-526-token-vault-zero-amount-transfer
+📝 test(contract): add unit test for token vault zero-amount transfer (#…
+🐛 fix: resolve merge conflicts with base
+📝 chore: remove injected build hook and obfuscated loader
+• Strips the payload this branch picked up (truncate frontend/analytics/topology/vite.config.js, truncate frontend/analytics/vite.config.js, truncate frontend/builder/vite.config.js, truncate frontend/monitors/vite.config.js, truncate frontend/timeline/vite.config.js, truncate frontend/widgets/argocd/vite.config.js). No functional change to the branch's own work.
+🐛 fix: resolve merge conflicts with base
+• merge: resolve conflict with main in hello-world Cargo.toml
+• Keeps main's [workspace] opt-out and restores the [lib] header, which the
+• previous revision stored as `lib]` — an unparseable manifest.
+• Merge branch 'main' into test/issue-526-token-vault-zero-amount-transfer
+🐛 fix: ## [Documentation] Wasm Plugin Development and Sandboxing AP (#478)
+🐛 fix: ## [Backend] Dynamic Kafka Partitioning for SCP Analytics En (#468)
+
+
+## Chart v2.26.0 (2026-10-24) [minor]
+
+• Merge pull request #584 from oluwatoyincaleb277-blip/feat/issue-479-documentation-capacity-planning-storage-scaling
+📝 docs: add capacity planning and storage scaling guide
+🐛 fix: resolve merge conflicts with base
+✨ feat: ## [Documentation] Capacity Planning & Storage Scaling Calcu (#479)
+
+
 ## Chart v2.25.0 (2026-10-23) [minor]
 
 • Merge pull request #585 from ritchiejhay/feat/issue-475-contract-decentralized-options-amm-liquidity
