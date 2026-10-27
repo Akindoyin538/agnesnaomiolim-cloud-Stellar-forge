@@ -12,6 +12,7 @@ export default defineConfig({
         main: path.resolve(__dirname, 'index.html'),
         perf: path.resolve(__dirname, 'perf.html'),
       },
+      external: ['d3'],
     },
   },
   resolve: {
@@ -44,11 +45,6 @@ export default defineConfig({
         target: 'http://localhost:9091',
         rewrite: (path) => path.replace(/^\/mock-prom/, ''),
       },
-    },
-  },
-  build: {
-    rollOptions: {
-      external: ['d3'],
     },
   },
 });

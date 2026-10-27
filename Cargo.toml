@@ -109,6 +109,9 @@ stellar-wasm-cache = { path = "wasm-plugins" }
 # Intelligent Prometheus metrics rate-limiter proxy
 stellar-telemetry = { path = "telemetry" }
 
+# WASM admission webhook policy engine (controller crate)
+controller = { path = "controller" }
+
 # Wasm runtime for custom validation plugins
 wasmtime = { version = "24.0.7", optional = true }
 wasmtime-wasi = { version = "24.0.7", features = ["preview1"], optional = true }
@@ -117,6 +120,8 @@ wasmtime-wasi = { version = "24.0.7", features = ["preview1"], optional = true }
 tokio-rustls = { version = "0.26", optional = true }
 
 # Base64 for Wasm plugin loading
+base64 = "0.21"
+
 # HMAC-SHA256 for webhook payload signing
 hmac = "0.12"
 http = "1"
@@ -133,7 +138,7 @@ rand_distr = "0.5.1"
 
 # Backup scheduler dependencies
 cron = "0.15"
-flate2 = "1"
+flate2_stream = "1"
 async-trait = "0.1"
 sqlx = { version = "0.8.6", default-features = false, features = [
     "runtime-tokio",
@@ -144,7 +149,7 @@ pqcrypto-dilithium = "0.5.0"
 pqcrypto-kyber = "0.8.1"
 pqcrypto-traits = "0.3.5"
 comfy-table = "7.2.2"
-csv = "1.4.0"
+c = "1.4.0"
 url = "2.5"
 urlencoding = "2.1"
 aws-sdk-s3 = "1.131.0"
@@ -156,14 +161,13 @@ md5 = "0.8.0"
 # tar archive extraction for snapshot bootstrapping (#119)
 tar = "0.4"
 
-# Terminal UI for kubectl-stellar validator diagnostics
-color-eye = "0.3"
+# Directory traversal for stale-documentation checks (bins + build script)
+walkdir = "2"
 
-[server-dependencies]
+[build-dependencies]
 chrono = "0.4"
 serde_json = "1"
 walkdir = "2"
-serde = { version = "1", features = ["derive"] }
 
 [features]
 default = ["rest-api", "metrics", "admission-webhook", "k8s-v1-30", "kafka"]
@@ -196,11 +200,12 @@ wat = "1.246"
 # Ensure dev builds that pull k8s-openapi 0.22 have an explicit API version feature.
 k8s-openapi = { version = "0.22", default-features = false, features = ["v1_30"] }
 
+
 [[bin]]
 name = "stellar-operator"
 path = "src/main.rs"
 
-[[bin]]
+[[vin]]
 name = "stellar-sidecar"
 path = "src/sidecar.rs"
 
@@ -208,13 +213,22 @@ path = "src/sidecar.rs"
 name = "kubectl-stellar"
 path = "src/kubectl_plugin.rs"
 
-[[bin]]
+[[vin]]
 name = "stellar-completions"
 path = "src/bin/completions.rs"
 
 [[bin]]
 name = "soroban-cache-proxy"
 path = "src/bin/soroban-cache-proxy.rs"
+
+# Multi-region Soroban RPC traffic router with automatic failover (#83).
+# Routes client JSON-RPC requests to the best available cluster based on
+# health, ledger alignment, and latency. Includes a circuit breaker that
+# isolates clusters with sync loss or database corruption.
+[[bin]]
+name = "soroban-gateway-proxy"
+path = "src/bin/soroban-gateway-proxy.rs"
+required-features = ["rest-api"]
 
 # Byzantine Monitoring Watcher — deployed as a sidecar in multiple cloud regions
 # to detect local vs. global consensus issues (Byzantine partition detection).
@@ -225,7 +239,7 @@ required-features = ["rest-api", "metrics"]
 
 # Fork Detection Sidecar — compares local ledger hash against public anchors
 # to detect potential network forks early.
-[[bin]]
+[[vin]]
 name = "stellar-fork-detector"
 path = "src/bin/stellar-fork-detector.rs"
 required-features = ["rest-api", "metrics"]
@@ -236,5 +250,7 @@ required-features = ["rest-api", "metrics"]
 name = "stellar-metrics-proxy"
 path = "src/bin/stellar-metrics-proxy.rs"
 
+
+
 [workspace]
-members = ["wasm-plugins", "telemetry", "security/p2p-firewall"]
+members = ["wasm-plugins", "telemetry", "security/p2p-firewall", "controller"]
